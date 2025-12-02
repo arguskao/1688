@@ -1,0 +1,6 @@
+# Local development environment variables for Cloudflare Workers
+# Copy this file to .dev.vars for local development
+
+DATABASE_URL=postgresql://user:password@ep-xxx.region.aws.neon.tech/dbname?sslmode=require
+EMAIL_API_KEY=your-email-api-key-here
+BUSINESS_EMAIL=business@example.com
