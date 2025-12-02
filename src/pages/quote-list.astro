@@ -1,0 +1,74 @@
+---
+import { QuoteListManager } from '../components/QuoteListManager';
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>詢價清單 - 詢價清單系統</title>
+    <meta name="description" content="查看和管理您的詢價清單" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <!-- Header -->
+      <div class="mb-8">
+        <nav class="mb-4 text-sm">
+          <a href="/" class="text-blue-600 hover:underline">首頁</a>
+          <span class="mx-2">/</span>
+          <span class="text-gray-600">詢價清單</span>
+        </nav>
+        
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">詢價清單</h1>
+        <p class="text-gray-600">管理您的詢價產品，確認後提交詢價請求</p>
+      </div>
+
+      <!-- Quote List Manager -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <QuoteListManager client:load />
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a
+          href="/products"
+          class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors"
+        >
+          繼續瀏覽產品
+        </a>
+        <a
+          href="/quote-submit"
+          id="submit-quote-btn"
+          class="flex-1 text-center bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+        >
+          提交詢價請求
+        </a>
+      </div>
+
+      <!-- Info Box -->
+      <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="font-semibold text-blue-900 mb-2">📋 提交詢價前請注意：</h3>
+        <ul class="text-sm text-blue-800 space-y-1">
+          <li>• 確認產品和數量無誤</li>
+          <li>• 準備好您的聯絡資訊</li>
+          <li>• 我們的業務團隊將在 24 小時內回覆</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      // Check if there are items before navigating
+      document.getElementById('submit-quote-btn')?.addEventListener('click', (e) => {
+        import('../lib/quoteStorage').then(({ getQuoteListFromStorage }) => {
+          const items = getQuoteListFromStorage();
+          
+          if (items.length === 0) {
+            e.preventDefault();
+            alert('詢價清單是空的，請先添加產品');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

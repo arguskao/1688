@@ -1,0 +1,86 @@
+{
+  "products": [
+    {
+      "product_id": "prod-001",
+      "name_en": "Stainless Steel Water Bottle",
+      "sku": "SSB-500-BLK",
+      "category": "Drinkware",
+      "description_en": "High-quality stainless steel water bottle with double-wall vacuum insulation. Keeps beverages cold for 24 hours or hot for 12 hours. Perfect for outdoor activities and daily use.",
+      "specs_json": {
+        "material": "304 Stainless Steel",
+        "capacity": "500ml",
+        "dimensions": "7cm x 7cm x 25cm",
+        "weight": "280g",
+        "colors": ["Black", "Silver", "Blue"]
+      },
+      "image_url": "https://placeholder.com/products/prod-001.jpg"
+    },
+    {
+      "product_id": "prod-002",
+      "name_en": "Bamboo Cutting Board Set",
+      "sku": "BCB-SET-3PC",
+      "category": "Kitchenware",
+      "description_en": "Eco-friendly bamboo cutting board set with 3 different sizes. Naturally antimicrobial and gentle on knife blades. Includes hanging holes for easy storage.",
+      "specs_json": {
+        "material": "100% Natural Bamboo",
+        "set_includes": "Large (40x30cm), Medium (35x25cm), Small (30x20cm)",
+        "thickness": "1.8cm",
+        "weight": "1.5kg",
+        "features": ["Antimicrobial", "Eco-friendly", "Knife-friendly"]
+      },
+      "image_url": "https://placeholder.com/products/prod-002.jpg"
+    },
+    {
+      "product_id": "prod-003",
+      "name_en": "LED Desk Lamp with USB Charging",
+      "sku": "LED-DSK-001",
+      "category": "Office Supplies",
+      "description_en": "Modern LED desk lamp with adjustable brightness and color temperature. Features built-in USB charging port for smartphones and tablets. Touch control panel for easy operation.",
+      "specs_json": {
+        "material": "ABS Plastic + Aluminum",
+        "power": "12W LED",
+        "brightness_levels": "5 levels",
+        "color_temperature": "3000K-6000K",
+        "dimensions": "15cm x 15cm x 45cm",
+        "weight": "650g",
+        "features": ["USB Charging Port", "Touch Control", "Adjustable Arm"]
+      },
+      "image_url": "https://placeholder.com/products/prod-003.jpg"
+    },
+    {
+      "product_id": "prod-004",
+      "name_en": "Wireless Bluetooth Speaker",
+      "sku": "BT-SPK-360",
+      "category": "Electronics",
+      "description_en": "Portable Bluetooth speaker with 360-degree sound. IPX7 waterproof rating makes it perfect for outdoor use. Up to 12 hours of playtime on a single charge.",
+      "specs_json": {
+        "material": "Silicone + ABS",
+        "bluetooth_version": "5.0",
+        "battery_capacity": "2000mAh",
+        "playtime": "12 hours",
+        "waterproof_rating": "IPX7",
+        "dimensions": "8cm x 8cm x 10cm",
+        "weight": "320g",
+        "colors": ["Black", "Red", "Blue", "Green"]
+      },
+      "image_url": "https://placeholder.com/products/prod-004.jpg"
+    },
+    {
+      "product_id": "prod-005",
+      "name_en": "Ergonomic Office Chair",
+      "sku": "EOC-PRO-BLK",
+      "category": "Furniture",
+      "description_en": "Professional ergonomic office chair with lumbar support and adjustable armrests. Breathable mesh back and comfortable cushioned seat. Supports up to 150kg.",
+      "specs_json": {
+        "material": "Mesh + High-density Foam + Steel Frame",
+        "adjustments": "Height, Armrests, Lumbar Support, Tilt",
+        "weight_capacity": "150kg",
+        "dimensions": "65cm x 65cm x 110-120cm",
+        "weight": "18kg",
+        "colors": ["Black", "Gray"],
+        "features": ["Lumbar Support", "Breathable Mesh", "360° Swivel", "Smooth Casters"]
+      },
+      "image_url": "https://placeholder.com/products/prod-005.jpg"
+    }
+  ]
+}

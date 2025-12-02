@@ -1,0 +1,58 @@
+---
+import { QuoteSubmissionForm } from '../components/QuoteSubmissionForm';
+import { QuoteListManager } from '../components/QuoteListManager';
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>提交詢價 - 詢價清單系統</title>
+    <meta name="description" content="填寫您的聯絡資訊並提交詢價請求" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+      <!-- Header -->
+      <div class="mb-8">
+        <nav class="mb-4 text-sm">
+          <a href="/" class="text-blue-600 hover:underline">首頁</a>
+          <span class="mx-2">/</span>
+          <a href="/quote-list" class="text-blue-600 hover:underline">詢價清單</a>
+          <span class="mx-2">/</span>
+          <span class="text-gray-600">提交詢價</span>
+        </nav>
+        
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">提交詢價請求</h1>
+        <p class="text-gray-600">請填寫您的聯絡資訊，我們將盡快與您聯繫</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Left Column: Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">聯絡資訊</h2>
+          <QuoteSubmissionForm client:load />
+        </div>
+
+        <!-- Right Column: Quote Summary -->
+        <div>
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">詢價清單</h2>
+            <QuoteListManager client:load />
+          </div>
+
+          <!-- Info Box -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-semibold text-blue-900 mb-2">📋 提交流程：</h3>
+            <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+              <li>填寫您的聯絡資訊</li>
+              <li>確認詢價清單無誤</li>
+              <li>點擊「提交詢價請求」</li>
+              <li>等待業務團隊聯繫（24小時內）</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

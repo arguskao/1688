@@ -8,14 +8,14 @@
   - Install testing dependencies (Vitest, fast-check)
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 2. Setup database schema and migrations
+- [x] 2. Setup database schema and migrations
   - Create D1 database migration file for Quotes table
   - Create D1 database migration file for QuoteItems table
   - Add indexes for performance optimization
   - Create database connection utility module
   - _Requirements: 5.1, 5.2, 5.3, 9.3, 9.4_
 
-- [ ] 3. Create product data source and SSG setup
+- [x] 3. Create product data source and SSG setup
   - Create JSON schema for product data source
   - Add sample product data with all required fields
   - Create product page template in Astro
@@ -30,7 +30,7 @@
   - **Property 2: Product information rendering completeness**
   - **Validates: Requirements 1.2, 1.4, 1.5**
 
-- [ ] 4. Implement browser storage service
+- [x] 4. Implement browser storage service
   - Create quoteStorage.ts module with TypeScript interfaces
   - Implement getQuoteListFromStorage function
   - Implement saveQuoteListToStorage function
@@ -58,7 +58,7 @@
   - **Property 7: Item removal completeness**
   - **Validates: Requirements 3.4**
 
-- [ ] 5. Build AddToQuoteButton component
+- [x] 5. Build AddToQuoteButton component
   - Create React component with TypeScript props interface
   - Implement click handler to add product to storage
   - Add visual feedback (toast notification or button state change)
@@ -66,7 +66,7 @@
   - Style with Tailwind CSS
   - _Requirements: 2.1, 2.2, 2.4, 2.5_
 
-- [ ] 6. Build QuoteListManager component
+- [x] 6. Build QuoteListManager component
   - Create React component to display quote list items
   - Implement quantity update functionality
   - Implement item removal functionality
@@ -74,7 +74,7 @@
   - Style with Tailwind CSS for responsive layout
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 7. Build QuoteSubmissionForm component
+- [x] 7. Build QuoteSubmissionForm component
   - Create React component with form fields
   - Implement form state management
   - Add client-side validation for required fields
@@ -96,7 +96,7 @@
   - **Property 11: Storage clearing after submission**
   - **Validates: Requirements 4.5**
 
-- [ ] 8. Create validation utilities
+- [x] 8. Create validation utilities
   - Implement email format validation function
   - Implement phone number validation function
   - Implement required field validation function
@@ -107,7 +107,7 @@
   - **Property 10: Email format validation**
   - **Validates: Requirements 4.4**
 
-- [ ] 9. Implement Quote API endpoint
+- [x] 9. Implement Quote API endpoint
   - Create functions/api/quote.ts with TypeScript types
   - Implement request validation logic
   - Implement product ID validation against data source
@@ -123,7 +123,7 @@
   - **Property 18: Invalid product ID rejection**
   - **Validates: Requirements 7.4**
 
-- [ ] 10. Implement database service
+- [x] 10. Implement database service
   - Create db.ts module with D1 database operations
   - Implement storeQuote function with transaction support
   - Generate unique quote_id using crypto.randomUUID()
@@ -148,7 +148,7 @@
   - **Property 19: ISO 8601 timestamp format**
   - **Validates: Requirements 9.4**
 
-- [ ] 11. Implement email notification service
+- [x] 11. Implement email notification service
   - Create email.ts module with email service integration
   - Implement sendEmailNotification function
   - Create HTML email template with product table
@@ -170,7 +170,7 @@
   - Verify error is logged
   - _Requirements: 6.3_
 
-- [ ] 12. Integrate API endpoint with database and email services
+- [x] 12. Integrate API endpoint with database and email services
   - Connect Quote API to database service
   - Connect Quote API to email service
   - Implement complete flow: validate → store → email → respond
