@@ -3,6 +3,13 @@
  */
 import type { AstroCookies } from 'astro';
 import { validateSession } from './auth';
+import {
+  AppError,
+  AuthenticationError,
+  toAppError,
+  createErrorResponse,
+  errorToResponse
+} from './errors';
 
 /**
  * Get environment variables from runtime or process.env
@@ -29,23 +36,23 @@ export async function checkAuth(
   databaseUrl: string
 ): Promise<AuthResult> {
   const sessionId = cookies.get('admin_session')?.value;
-  
+
   if (!sessionId) {
     return {
       authenticated: false,
       error: 'Not authenticated'
     };
   }
-  
+
   const isValid = await validateSession(sessionId, databaseUrl);
-  
+
   if (!isValid) {
     return {
       authenticated: false,
       error: 'Session expired or invalid'
     };
   }
-  
+
   return {
     authenticated: true
   };
@@ -54,29 +61,28 @@ export async function checkAuth(
 /**
  * Create unauthorized response
  */
-export function unauthorizedResponse(message: string = 'Unauthorized') {
-  return new Response(
-    JSON.stringify({ 
-      success: false, 
-      error: message 
-    }),
-    { 
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
+export function unauthorizedResponse(message: string = 'Unauthorized'): Response {
+  return errorToResponse(new AuthenticationError(message));
 }
 
 /**
  * Create error response
  */
-export function errorResponse(message: string, status: number = 500) {
+export function errorResponse(message: string, status: number = 500): Response {
+  const error = new AppError(message, status);
+  return errorToResponse(error);
+}
+
+/**
+ * Create success response
+ */
+export function successResponse(data: any, status: number = 200): Response {
   return new Response(
-    JSON.stringify({ 
-      success: false, 
-      error: message 
+    JSON.stringify({
+      success: true,
+      ...data
     }),
-    { 
+    {
       status,
       headers: { 'Content-Type': 'application/json' }
     }
@@ -84,17 +90,11 @@ export function errorResponse(message: string, status: number = 500) {
 }
 
 /**
- * Create success response
+ * Handle API errors consistently
  */
-export function successResponse(data: any, status: number = 200) {
-  return new Response(
-    JSON.stringify({ 
-      success: true,
-      ...data
-    }),
-    { 
-      status,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
+export function handleApiError(error: unknown, context?: string): Response {
+  if (context) {
+    console.error(`[${context}]`, error);
+  }
+  return errorToResponse(error);
 }

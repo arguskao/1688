@@ -6,66 +6,70 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { checkAuth, unauthorizedResponse, errorResponse, successResponse, getEnv } from '../../../../lib/apiAuth';
+import { checkAuth, getEnv } from '../../../../lib/apiAuth';
+import { ApiResponse } from '../../../../lib/apiResponse';
 import { getAllSpecFields, createSpecField, fieldNameExists } from '../../../../lib/specFieldDb';
 
 export const GET: APIRoute = async ({ cookies, locals }) => {
-    try {
+    return ApiResponse.withErrorHandling(async () => {
         const env = getEnv(locals.runtime);
         const databaseUrl = env.DATABASE_URL;
 
         if (!databaseUrl) {
-            return errorResponse('Database not configured', 500);
+            return ApiResponse.error('Database not configured', 500);
         }
 
         const auth = await checkAuth(cookies, databaseUrl);
         if (!auth.authenticated) {
-            return unauthorizedResponse(auth.error);
+            return ApiResponse.unauthorized(auth.error);
         }
 
         const specFields = await getAllSpecFields(databaseUrl);
-        return successResponse({ specFields });
-    } catch (error: any) {
-        console.error('Error fetching spec fields:', error);
-        return errorResponse('Failed to fetch spec fields');
-    }
+        return ApiResponse.success({ specFields });
+    }, 'GET /api/admin/spec-fields');
 };
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
-    try {
+    return ApiResponse.withErrorHandling(async () => {
         const env = getEnv(locals.runtime);
         const databaseUrl = env.DATABASE_URL;
 
         if (!databaseUrl) {
-            return errorResponse('Database not configured', 500);
+            return ApiResponse.error('Database not configured', 500);
         }
 
         const auth = await checkAuth(cookies, databaseUrl);
         if (!auth.authenticated) {
-            return unauthorizedResponse(auth.error);
+            return ApiResponse.unauthorized(auth.error);
         }
 
         const body = await request.json();
         const { field_name, field_label, field_type, options, display_order, is_required } = body;
 
         // Validation
-        if (!field_name || !field_name.trim()) {
-            return errorResponse('Field name is required', 400);
+        const errors: Array<{ field: string; message: string }> = [];
+
+        if (!field_name?.trim()) {
+            errors.push({ field: 'field_name', message: 'Field name is required' });
         }
-        if (!field_label || !field_label.trim()) {
-            return errorResponse('Field label is required', 400);
+        if (!field_label?.trim()) {
+            errors.push({ field: 'field_label', message: 'Field label is required' });
         }
         if (!field_type || !['text', 'number', 'select'].includes(field_type)) {
-            return errorResponse('Field type must be text, number, or select', 400);
+            errors.push({ field: 'field_type', message: 'Field type must be text, number, or select' });
         }
         if (field_type === 'select' && (!options || !Array.isArray(options) || options.length === 0)) {
-            return errorResponse('Select type requires options array', 400);
+            errors.push({ field: 'options', message: 'Select type requires options array' });
+        }
+
+        if (errors.length > 0) {
+            return ApiResponse.validationError(errors);
         }
 
         // Check unique field name
         const exists = await fieldNameExists(field_name, null, databaseUrl);
         if (exists) {
-            return errorResponse('Field name already exists', 409);
+            return ApiResponse.conflict('Field name already exists');
         }
 
         const specField = await createSpecField({
@@ -77,9 +81,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
             is_required: is_required || false,
         }, databaseUrl);
 
-        return successResponse({ specField }, 201);
-    } catch (error: any) {
-        console.error('Error creating spec field:', error);
-        return errorResponse('Failed to create spec field');
-    }
+        return ApiResponse.created({ specField });
+    }, 'POST /api/admin/spec-fields');
 };
