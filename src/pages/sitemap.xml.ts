@@ -8,8 +8,8 @@ import { getAllProducts } from '../lib/products';
 
 const SITE_URL = 'https://yourdomain.com'; // TODO: Replace with your actual domain
 
-export const GET: APIRoute = () => {
-  const products = getAllProducts();
+export const GET: APIRoute = async ({ locals }) => {
+  const products = await getAllProducts(locals.runtime);
   
   const currentDate = new Date().toISOString().split('T')[0];
   

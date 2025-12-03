@@ -109,14 +109,26 @@ async function importProducts(csvPath: string): Promise<void> {
   for (let i = 1; i < lines.length; i++) {
     const fields = parseCsvLine(lines[i]);
     
+    // Parse additional_images if present (it's a JSON array string)
+    let additionalImages: string[] = [];
+    if (fields[8]) {
+      try {
+        additionalImages = JSON.parse(fields[8]);
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    
     const product: Product = {
       product_id: fields[0] || '',
       name_en: fields[1] || '',
       sku: fields[2] || '',
       category: fields[3] || '',
       description_en: fields[4] || '',
-      specs_json: fields[5] || '{}',
-      image_url: fields[6] || '',
+      description_html: fields[5] || '',
+      specs_json: fields[6] || '{}',
+      image_url: fields[7] || '',
+      additional_images: additionalImages,
     };
     
     // Skip if no product_id or name
@@ -152,15 +164,18 @@ async function importProducts(csvPath: string): Promise<void> {
           await pool.query(
             `UPDATE products 
              SET name_en = $1, sku = $2, category = $3, description_en = $4, 
-                 specs_json = $5, image_url = $6, updated_at = NOW()
-             WHERE product_id = $7`,
+                 description_html = $5, specs_json = $6, image_url = $7, 
+                 additional_images = $8, updated_at = NOW()
+             WHERE product_id = $9`,
             [
               product.name_en,
               product.sku,
               product.category,
               product.description_en,
+              product.description_html,
               product.specs_json,
               product.image_url,
+              product.additional_images,
               product.product_id,
             ]
           );
@@ -170,16 +185,19 @@ async function importProducts(csvPath: string): Promise<void> {
           // Insert new product
           await pool.query(
             `INSERT INTO products 
-             (product_id, name_en, sku, category, description_en, specs_json, image_url)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+             (product_id, name_en, sku, category, description_en, description_html, 
+              specs_json, image_url, additional_images)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
             [
               product.product_id,
               product.name_en,
               product.sku,
               product.category,
               product.description_en,
+              product.description_html,
               product.specs_json,
               product.image_url,
+              product.additional_images,
             ]
           );
           inserted++;

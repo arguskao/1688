@@ -1,51 +1,105 @@
-import type { Product, ProductDataSource } from '../types/product';
-import productsData from '../data/products.json';
+import type { Product } from '../types/product';
+import { getProducts as getProductsFromDb, getProductById as getProductByIdFromDb, getCategories as getCategoriesFromDb } from './productDb';
 
 /**
- * Get all products from the data source
+ * Get database URL from environment
+ * In Cloudflare Pages, environment variables are passed via the runtime context
  */
-export function getAllProducts(): Product[] {
-  return (productsData as ProductDataSource).products;
+function getDatabaseUrl(runtime?: any): string {
+  // Try to get from Cloudflare runtime first (for production)
+  if (runtime?.env?.DATABASE_URL) {
+    return runtime.env.DATABASE_URL;
+  }
+  
+  // Fall back to import.meta.env (for build time) or process.env (for local dev)
+  const url = import.meta.env.DATABASE_URL || process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL is not configured');
+  }
+  return url;
+}
+
+/**
+ * Get all products from the database
+ */
+export async function getAllProducts(runtime?: any): Promise<Product[]> {
+  try {
+    const databaseUrl = getDatabaseUrl(runtime);
+    const result = await getProductsFromDb(databaseUrl, { limit: 1000 });
+    return result.products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
 }
 
 /**
  * Get a single product by ID
  */
-export function getProductById(productId: string): Product | undefined {
-  return getAllProducts().find(p => p.product_id === productId);
+export async function getProductById(productId: string, runtime?: any): Promise<Product | null> {
+  try {
+    const databaseUrl = getDatabaseUrl(runtime);
+    return await getProductByIdFromDb(productId, databaseUrl);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return null;
+  }
 }
 
 /**
  * Get products by category
  */
-export function getProductsByCategory(category: string): Product[] {
-  return getAllProducts().filter(p => p.category === category);
+export async function getProductsByCategory(category: string, runtime?: any): Promise<Product[]> {
+  try {
+    const databaseUrl = getDatabaseUrl(runtime);
+    const result = await getProductsFromDb(databaseUrl, { category, limit: 1000 });
+    return result.products;
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    return [];
+  }
 }
 
 /**
  * Get all unique categories
  */
-export function getAllCategories(): string[] {
-  const categories = getAllProducts().map(p => p.category);
-  return Array.from(new Set(categories));
+export async function getAllCategories(runtime?: any): Promise<string[]> {
+  try {
+    const databaseUrl = getDatabaseUrl(runtime);
+    return await getCategoriesFromDb(databaseUrl);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
 }
 
 /**
  * Validate if a product ID exists
  */
-export function isValidProductId(productId: string): boolean {
-  return getAllProducts().some(p => p.product_id === productId);
+export async function isValidProductId(productId: string, runtime?: any): Promise<boolean> {
+  try {
+    const product = await getProductById(productId, runtime);
+    return product !== null;
+  } catch (error) {
+    return false;
+  }
 }
 
 /**
  * Validate multiple product IDs
  */
-export function validateProductIds(productIds: string[]): {
+export async function validateProductIds(productIds: string[], runtime?: any): Promise<{
   valid: boolean;
   invalidIds: string[];
-} {
-  const allProductIds = getAllProducts().map(p => p.product_id);
-  const invalidIds = productIds.filter(id => !allProductIds.includes(id));
+}> {
+  const invalidIds: string[] = [];
+  
+  for (const id of productIds) {
+    const isValid = await isValidProductId(id, runtime);
+    if (!isValid) {
+      invalidIds.push(id);
+    }
+  }
   
   return {
     valid: invalidIds.length === 0,

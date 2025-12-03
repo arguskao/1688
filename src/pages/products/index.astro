@@ -1,9 +1,11 @@
 ---
+export const prerender = false; // Use server-side rendering
+
 import { getAllProducts, getAllCategories } from '../../lib/products';
 import { AddToQuoteButton } from '../../components/AddToQuoteButton';
 
-const products = getAllProducts();
-const categories = getAllCategories();
+const products = await getAllProducts(Astro.locals.runtime);
+const categories = await getAllCategories(Astro.locals.runtime);
 ---
 
 <!DOCTYPE html>

@@ -1,22 +1,21 @@
 ---
-import { getAllProducts } from '../../lib/products';
+export const prerender = false; // Use server-side rendering
+
+import { getProductById } from '../../lib/products';
 import type { Product } from '../../types/product';
 import { AddToQuoteButton } from '../../components/AddToQuoteButton';
 
-export async function getStaticPaths() {
-  const products = getAllProducts();
-  
-  return products.map((product) => ({
-    params: { id: product.product_id },
-    props: { product }
-  }));
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/products');
 }
 
-interface Props {
-  product: Product;
-}
+const product = await getProductById(id, Astro.locals.runtime);
 
-const { product } = Astro.props;
+if (!product) {
+  return Astro.redirect('/products');
+}
 ---
 
 <!DOCTYPE html>
@@ -114,11 +113,6 @@ const { product } = Astro.props;
 
             <div class="my-6 border-t border-gray-200"></div>
 
-            <h2 class="text-xl font-semibold text-gray-900 mb-3">產品描述</h2>
-            <p class="text-gray-700 leading-relaxed mb-6">
-              {product.description_en}
-            </p>
-
             <h2 class="text-xl font-semibold text-gray-900 mb-3">產品規格</h2>
             <div class="bg-gray-50 rounded-lg p-4 mb-6">
               <dl class="space-y-2">
@@ -150,6 +144,33 @@ const { product } = Astro.props;
               </p>
             </div>
           </div>
+        </div>
+
+        <!-- Product Description - Full Width at Bottom -->
+        <div class="border-t border-gray-200 p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">產品描述</h2>
+          <div class="prose max-w-none text-gray-700 leading-relaxed mb-8">
+            <p>{product.description_en}</p>
+          </div>
+
+          <!-- Product Images Gallery -->
+          {product.images && product.images.length > 0 && (
+            <div class="mt-8">
+              <h3 class="text-xl font-semibold text-gray-900 mb-4">產品圖片</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {product.images.map((image: any, index: number) => (
+                  <div class="bg-gray-100 rounded-lg overflow-hidden">
+                    <img 
+                      src={image.url} 
+                      alt={image.alt_text || product.name_en}
+                      class="w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

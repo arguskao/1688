@@ -48,40 +48,37 @@ export async function getProducts(
   const sql = neon(databaseUrl);
   const { limit = 50, offset = 0, category } = options;
 
-  // Build query
-  let query = 'SELECT * FROM products';
-  const params: any[] = [];
-
-  if (category) {
-    query += ' WHERE category = $1';
-    params.push(category);
-  }
-
-  query += ' ORDER BY created_at DESC';
-
-  if (limit) {
-    query += ` LIMIT $${params.length + 1}`;
-    params.push(limit);
-  }
-
-  if (offset) {
-    query += ` OFFSET $${params.length + 1}`;
-    params.push(offset);
-  }
-
   // Get products
-  const products = await sql(query, params);
+  let products;
+  if (category) {
+    products = await sql`
+      SELECT * FROM products
+      WHERE category = ${category}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+  } else {
+    products = await sql`
+      SELECT * FROM products
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+  }
 
   // Get total count
-  let countQuery = 'SELECT COUNT(*) as count FROM products';
-  const countParams: any[] = [];
-
+  let countResult;
   if (category) {
-    countQuery += ' WHERE category = $1';
-    countParams.push(category);
+    countResult = await sql`
+      SELECT COUNT(*) as count FROM products
+      WHERE category = ${category}
+    `;
+  } else {
+    countResult = await sql`
+      SELECT COUNT(*) as count FROM products
+    `;
   }
-
-  const countResult = await sql(countQuery, countParams);
   const total = parseInt(countResult[0].count);
 
   return {
@@ -117,60 +114,31 @@ export async function updateProduct(
 ): Promise<Product | null> {
   const sql = neon(databaseUrl);
 
-  // Build update query dynamically
-  const fields: string[] = [];
-  const values: any[] = [];
-  let paramIndex = 1;
-
-  if (updates.name_en !== undefined) {
-    fields.push(`name_en = $${paramIndex++}`);
-    values.push(updates.name_en);
-  }
-
-  if (updates.sku !== undefined) {
-    fields.push(`sku = $${paramIndex++}`);
-    values.push(updates.sku);
-  }
-
-  if (updates.category !== undefined) {
-    fields.push(`category = $${paramIndex++}`);
-    values.push(updates.category);
-  }
-
-  if (updates.description_en !== undefined) {
-    fields.push(`description_en = $${paramIndex++}`);
-    values.push(updates.description_en);
-  }
-
-  if (updates.specs_json !== undefined) {
-    fields.push(`specs_json = $${paramIndex++}`);
-    values.push(JSON.stringify(updates.specs_json));
-  }
-
-  if (updates.image_url !== undefined) {
-    fields.push(`image_url = $${paramIndex++}`);
-    values.push(updates.image_url);
-  }
-
-  if (fields.length === 0) {
+  if (Object.keys(updates).length === 0) {
     // No updates provided
     return getProductById(productId, databaseUrl);
   }
 
-  // Add updated_at
-  fields.push('updated_at = NOW()');
+  // Build update object
+  const updateData: any = { ...updates };
+  if (updates.specs_json !== undefined) {
+    updateData.specs_json = JSON.stringify(updates.specs_json);
+  }
 
-  // Add product_id to values
-  values.push(productId);
-
-  const query = `
+  // Perform update using template literals
+  const result = await sql`
     UPDATE products
-    SET ${fields.join(', ')}
-    WHERE product_id = $${paramIndex}
+    SET 
+      name_en = COALESCE(${updates.name_en}, name_en),
+      sku = COALESCE(${updates.sku}, sku),
+      category = COALESCE(${updates.category}, category),
+      description_en = COALESCE(${updates.description_en}, description_en),
+      specs_json = COALESCE(${updateData.specs_json ? updateData.specs_json : null}::jsonb, specs_json),
+      image_url = COALESCE(${updates.image_url}, image_url),
+      updated_at = NOW()
+    WHERE product_id = ${productId}
     RETURNING *
   `;
-
-  const result = await sql(query, values);
 
   return result.length > 0 ? (result[0] as Product) : null;
 }

@@ -1,0 +1,14 @@
+product_id,name_en,sku,category,description_en,specs_json,image_url
+A01,寵物皮膚專用艾毛寶,A01,Pet Supplies,"[block id=""homepage-slider""]","{""type"":""variable"",""visibility"":""visible""}",
+C01,少賴皮洗毛精(效期2027/1)買一贈一,C01,Pet Supplies,神奇洗劑升級版！,"{""type"":""variable"",""visibility"":""visible""}",
+AB1,艾毛寶＋少賴皮優惠組(少賴皮效期2027/1，買一贈一),AB1,Pet Supplies,原優惠價艾毛寶1200元＋少賴皮優惠價450元,"{""type"":""simple"",""visibility"":""visible""}",
+D1-1,艾毛寶三盒裝 少賴皮(少賴皮效期2027/1，買一贈一),D1-1,Pet Supplies,三盒艾毛寶＋少賴皮一瓶，等於少賴皮一瓶只要299元！,"{""type"":""simple"",""visibility"":""visible""}",
+A08,食品級矽藻土（超優質）,A08,Pet Supplies,100g試用裝！,"{""type"":""simple"",""visibility"":""search""}",
+R1,補運費,R1,Pet Supplies,跨境/超重/補寄補運費,"{""type"":""simple, virtual"",""visibility"":""search""}",https://pethospital.com.tw/wp-content/uploads/2018/04/pet_resend_shipping.jpg
+E01,寵物關節專用草上飛plus 150顆瓶裝,E01,Pet Supplies,草上飛plus版正式上市，原 草上飛 升級版,"{""type"":""simple"",""visibility"":""visible""}",
+A01-E01,艾毛寶＋草上飛plus優惠組,A01-E01,Pet Supplies,草上飛plus版正式上市，原 草上飛 升級版,"{""type"":""simple"",""visibility"":""visible""}",
+AB1-E01,艾毛寶＋少賴皮(少賴皮效期2027/1，買一贈一)＋草上飛plus,AB1-E01,Pet Supplies,草上飛plus版正式上市，原 草上飛 升級版,"{""type"":""simple"",""visibility"":""visible""}",
+D1-1-E01,艾毛寶三盒裝＋少賴皮(少賴皮效期2027/1，買一贈一)＋草上飛plus,D1-1-E01,Pet Supplies,草上飛plus版正式上市，原 草上飛 升級版,"{""type"":""simple"",""visibility"":""visible""}",
+Y01,寵物護眼專用黑木童,Y01,Pet Supplies,No description available,"{""type"":""simple"",""visibility"":""visible""}",
+A01-2,寵物皮膚專用艾毛寶(瓶裝),A01-2,Pet Supplies,No description available,"{""type"":""variable"",""visibility"":""visible""}",
+AB1-1,艾毛寶160顆瓶裝＋少賴皮(少賴皮效期2027/1，買一贈一)優惠組,AB1-1,Pet Supplies,限時 促銷價：,"{""type"":""simple"",""visibility"":""visible""}",

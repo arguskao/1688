@@ -88,7 +88,7 @@
   - **Property 16: Deletion cancellation preserves data**
   - **Validates: Requirements 5.5**
 
-- [ ] 5. Image management service
+- [x] 5. Image management service
   - Implement image upload to R2 with unique ID generation
   - Implement image deletion from R2
   - Implement image URL generation
@@ -116,7 +116,7 @@
   - **Property 15: Image cleanup on deletion**
   - **Validates: Requirements 5.3**
 
-- [ ] 6. Authentication API endpoints
+- [-] 6. Authentication API endpoints
   - Create POST /api/admin/login endpoint
   - Create POST /api/admin/logout endpoint
   - Implement rate limiting for login attempts
