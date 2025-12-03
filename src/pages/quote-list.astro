@@ -1,5 +1,6 @@
 ---
 import { QuoteListManager } from '../components/QuoteListManager';
+import { QuoteSubmissionForm } from '../components/QuoteSubmissionForm';
 ---
 
 <!DOCTYPE html>
@@ -8,67 +9,88 @@ import { QuoteListManager } from '../components/QuoteListManager';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>詢價清單 - 詢價清單系統</title>
-    <meta name="description" content="查看和管理您的詢價清單" />
+    <meta name="description" content="查看和管理您的詢價清單，填寫聯絡資訊並提交詢價請求" />
   </head>
   <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
       <!-- Header -->
       <div class="mb-8">
         <nav class="mb-4 text-sm">
           <a href="/" class="text-blue-600 hover:underline">首頁</a>
           <span class="mx-2">/</span>
+          <a href="/products" class="text-blue-600 hover:underline">產品目錄</a>
+          <span class="mx-2">/</span>
           <span class="text-gray-600">詢價清單</span>
         </nav>
         
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">詢價清單</h1>
-        <p class="text-gray-600">管理您的詢價產品，確認後提交詢價請求</p>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">詢價清單與提交</h1>
+        <p class="text-gray-600">管理您的詢價產品，填寫聯絡資訊並提交詢價請求</p>
       </div>
 
-      <!-- Quote List Manager -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <QuoteListManager client:load />
+      <!-- Two Column Layout -->
+      <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Left Column: Quote List -->
+        <div>
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">詢價清單</h2>
+            <QuoteListManager client:load />
+          </div>
+
+          <!-- Continue Shopping Button -->
+          <a
+            href="/products"
+            class="block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            ← 繼續瀏覽產品
+          </a>
+        </div>
+
+        <!-- Right Column: Submission Form -->
+        <div>
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">聯絡資訊</h2>
+            <QuoteSubmissionForm client:load />
+          </div>
+
+          <!-- Info Box -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-semibold text-blue-900 mb-2">📋 提交流程：</h3>
+            <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+              <li>確認詢價清單中的產品和數量</li>
+              <li>填寫您的聯絡資訊</li>
+              <li>點擊「提交詢價請求」按鈕</li>
+              <li>等待業務團隊聯繫（24小時內）</li>
+            </ol>
+          </div>
+        </div>
       </div>
 
-      <!-- Actions -->
-      <div class="flex flex-col sm:flex-row gap-4">
-        <a
-          href="/products"
-          class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors"
-        >
-          繼續瀏覽產品
-        </a>
-        <a
-          href="/quote-submit"
-          id="submit-quote-btn"
-          class="flex-1 text-center bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-        >
-          提交詢價請求
-        </a>
-      </div>
-
-      <!-- Info Box -->
-      <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 class="font-semibold text-blue-900 mb-2">📋 提交詢價前請注意：</h3>
-        <ul class="text-sm text-blue-800 space-y-1">
-          <li>• 確認產品和數量無誤</li>
-          <li>• 準備好您的聯絡資訊</li>
-          <li>• 我們的業務團隊將在 24 小時內回覆</li>
-        </ul>
+      <!-- Additional Info Section -->
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div class="text-3xl mb-3">⚡</div>
+          <h3 class="font-semibold text-gray-900 mb-2">快速回應</h3>
+          <p class="text-sm text-gray-600">
+            我們的業務團隊將在 24 小時內回覆您的詢價請求
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div class="text-3xl mb-3">💰</div>
+          <h3 class="font-semibold text-gray-900 mb-2">最佳報價</h3>
+          <p class="text-sm text-gray-600">
+            根據您的需求量，提供最具競爭力的價格
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div class="text-3xl mb-3">🔒</div>
+          <h3 class="font-semibold text-gray-900 mb-2">資料安全</h3>
+          <p class="text-sm text-gray-600">
+            您的聯絡資訊將被妥善保管，僅用於詢價回覆
+          </p>
+        </div>
       </div>
     </div>
-
-    <script>
-      // Check if there are items before navigating
-      document.getElementById('submit-quote-btn')?.addEventListener('click', (e) => {
-        import('../lib/quoteStorage').then(({ getQuoteListFromStorage }) => {
-          const items = getQuoteListFromStorage();
-          
-          if (items.length === 0) {
-            e.preventDefault();
-            alert('詢價清單是空的，請先添加產品');
-          }
-        });
-      });
-    </script>
   </body>
 </html>

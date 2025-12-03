@@ -1,17 +1,19 @@
 /**
  * Quote API endpoint
- * Handles quote submission requests
+ * Handles quote submission requests with rate limiting
  */
 
 import type { PagesFunction } from '@cloudflare/workers-types';
 import { neon } from '@neondatabase/serverless';
 import { validateQuoteForm } from '../../src/lib/validation';
 import { validateProductIds } from '../../src/lib/products';
+import { withRateLimit } from '../../src/lib/rateLimit';
 
 interface Env {
   DATABASE_URL: string;
   EMAIL_API_KEY: string;
   BUSINESS_EMAIL: string;
+  RATE_LIMIT_PER_MINUTE?: string;
 }
 
 interface QuoteRequestItem {
@@ -133,9 +135,9 @@ async function sendEmailNotification(
 
 /**
  * POST /api/quote
- * Handle quote submission
+ * Handle quote submission (without rate limiting)
  */
-export const onRequestPost: PagesFunction<Env> = async (context) => {
+const handleQuoteSubmission: PagesFunction<Env> = async (context) => {
   try {
     // Parse request body
     const request = await context.request.json() as QuoteRequest;
@@ -205,3 +207,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
   }
 };
+
+/**
+ * POST /api/quote
+ * Handle quote submission with rate limiting
+ * Default: 10 requests per minute per IP
+ */
+export const onRequestPost: PagesFunction<Env> = withRateLimit(
+  handleQuoteSubmission,
+  {
+    maxRequests: 10,
+    windowMs: 60000 // 1 minute
+  }
+);

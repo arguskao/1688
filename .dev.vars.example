@@ -1,6 +1,25 @@
-# Local development environment variables for Cloudflare Workers
-# Copy this file to .dev.vars for local development
+# =============================================================================
+# 1688 System - Local Development Variables
+# =============================================================================
+# Copy this file to .dev.vars for local development with Cloudflare Workers
+# This file is used by `wrangler dev` and `wrangler pages dev`
+# =============================================================================
 
+# Database URL (Neon PostgreSQL)
 DATABASE_URL=postgresql://user:password@ep-xxx.region.aws.neon.tech/dbname?sslmode=require
-EMAIL_API_KEY=your-email-api-key-here
+
+# Email Service API Key (Resend/SendGrid/Mailgun)
+EMAIL_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Business Email Address
 BUSINESS_EMAIL=business@example.com
+
+# Rate Limiting (requests per minute)
+RATE_LIMIT_PER_MINUTE=10
+
+# Admin Authentication
+# Generate password hash using: tsx scripts/generate-password-hash.ts <your-password>
+ADMIN_PASSWORD_HASH=your-password-hash-here
+
+# Session Secret (use a random string in production)
+SESSION_SECRET=your-random-session-secret-here

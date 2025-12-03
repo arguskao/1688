@@ -177,7 +177,7 @@
   - Add comprehensive error handling
   - _Requirements: 5.1, 5.2, 5.3, 5.5, 6.1_
 
-- [ ] 13. Setup Cloudflare R2 for product images
+- [x] 13. Setup Cloudflare R2 for product images
   - Create R2 bucket configuration in wrangler.toml
   - Implement image upload utility (for development/admin use)
   - Implement naming convention based on product_id
@@ -197,14 +197,14 @@
   - **Property 22: R2 cache headers**
   - **Validates: Requirements 10.4**
 
-- [ ] 14. Create quote list page
+- [x] 14. Create quote list page
   - Create src/pages/quote-list.astro page
   - Integrate QuoteListManager component
   - Integrate QuoteSubmissionForm component
   - Add page layout and styling
   - _Requirements: 3.1, 3.2, 4.1_
 
-- [ ] 15. Add rate limiting to Quote API
+- [x] 15. Add rate limiting to Quote API
   - Implement rate limiting middleware
   - Configure limit (10 requests per minute per IP)
   - Return 429 status code when exceeded
@@ -216,14 +216,14 @@
   - Test that rate limit resets after time window
   - _Requirements: 7.1_
 
-- [ ] 16. Configure environment variables and secrets
+- [x] 16. Configure environment variables and secrets
   - Create .env.example file with all required variables
   - Document environment variables in README
   - Configure Cloudflare secrets for production
   - Setup wrangler.toml with bindings
   - _Requirements: 8.5, 9.1_
 
-- [ ] 17. Create deployment configuration
+- [x] 17. Create deployment configuration
   - Configure wrangler.toml for Cloudflare Pages
   - Setup D1 database binding
   - Setup R2 bucket binding
@@ -231,7 +231,7 @@
   - Document deployment steps
   - _Requirements: 8.5, 9.1_
 
-- [ ] 18. Checkpoint - Ensure all tests pass
+- [x] 18. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ]* 19. Write integration tests for complete quote flow
@@ -249,12 +249,12 @@
   - Test invalid JSON in storage
   - _Requirements: 2.5, 3.5, 5.4, 7.2_
 
-- [ ] 21. Add SEO optimization
+- [x] 21. Add SEO optimization
   - Add meta tags to product pages
   - Configure sitemap generation
   - Add robots.txt
   - Optimize image loading with lazy loading
   - _Requirements: 11.1, 11.4, 11.5_
 
-- [ ] 22. Final checkpoint - Ensure all tests pass
+- [x] 22. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.

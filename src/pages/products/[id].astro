@@ -24,8 +24,48 @@ const { product } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{product.name_en} - 詢價清單系統</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>{product.name_en} - {product.category} | 詢價清單系統</title>
+    <meta name="title" content={`${product.name_en} - ${product.category} | 詢價清單系統`} />
     <meta name="description" content={product.description_en} />
+    <meta name="keywords" content={`${product.name_en}, ${product.sku}, ${product.category}, B2B, 詢價, 批發`} />
+    <meta name="author" content="詢價清單系統" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product" />
+    <meta property="og:url" content={`https://yourdomain.com/products/${product.product_id}`} />
+    <meta property="og:title" content={`${product.name_en} - ${product.category}`} />
+    <meta property="og:description" content={product.description_en} />
+    <meta property="og:image" content={product.image_url} />
+    <meta property="og:site_name" content="詢價清單系統" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={`https://yourdomain.com/products/${product.product_id}`} />
+    <meta property="twitter:title" content={`${product.name_en} - ${product.category}`} />
+    <meta property="twitter:description" content={product.description_en} />
+    <meta property="twitter:image" content={product.image_url} />
+    
+    <!-- Product Schema.org -->
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": product.name_en,
+      "image": product.image_url,
+      "description": product.description_en,
+      "sku": product.sku,
+      "category": product.category,
+      "offers": {
+        "@type": "Offer",
+        "availability": "https://schema.org/InStock",
+        "priceCurrency": "TWD"
+      }
+    })} />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={`https://yourdomain.com/products/${product.product_id}`} />
+    
     <link rel="stylesheet" href="/src/styles/global.css" />
   </head>
   <body class="bg-gray-50 min-h-screen">

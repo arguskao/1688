@@ -1,17 +1,49 @@
-name = "quote-list-system"
+name = "1688"
 compatibility_date = "2024-01-01"
 
+# Build configuration
 [build]
 command = "pnpm run build"
 
-# R2 Bucket binding (configure after creating bucket)
-# [[r2_buckets]]
-# binding = "R2"
-# bucket_name = "product-images"
+# R2 Bucket binding for product images
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "product-images"
 
+# Public variables (non-sensitive)
+# These can be committed to version control
 [vars]
-# BUSINESS_EMAIL will be set via environment variables
-# DATABASE_URL will be set via secrets (wrangler secret put DATABASE_URL)
+RATE_LIMIT_PER_MINUTE = "10"
 
+# Production environment configuration
 [env.production]
 vars = { RATE_LIMIT_PER_MINUTE = "10" }
+
+# Staging environment configuration (optional)
+[env.staging]
+vars = { RATE_LIMIT_PER_MINUTE = "20" }
+
+# Development environment configuration (optional)
+[env.development]
+vars = { RATE_LIMIT_PER_MINUTE = "100" }
+
+# =============================================================================
+# Secrets Configuration
+# =============================================================================
+# Sensitive values should be set using Cloudflare secrets:
+#
+# For Cloudflare Pages:
+#   wrangler pages secret put DATABASE_URL
+#   wrangler pages secret put EMAIL_API_KEY
+#   wrangler pages secret put BUSINESS_EMAIL
+#
+# For Cloudflare Workers:
+#   wrangler secret put DATABASE_URL
+#   wrangler secret put EMAIL_API_KEY
+#   wrangler secret put BUSINESS_EMAIL
+#
+# Required secrets:
+#   - DATABASE_URL: PostgreSQL connection string (Neon)
+#   - EMAIL_API_KEY: Email service API key (Resend/SendGrid/Mailgun)
+#   - BUSINESS_EMAIL: Email address to receive quote notifications
+# =============================================================================

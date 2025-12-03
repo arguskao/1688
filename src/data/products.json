@@ -13,7 +13,7 @@
         "weight": "280g",
         "colors": ["Black", "Silver", "Blue"]
       },
-      "image_url": "https://placeholder.com/products/prod-001.jpg"
+      "image_url": "/api/images/products/prod-001.jpg"
     },
     {
       "product_id": "prod-002",
@@ -28,7 +28,7 @@
         "weight": "1.5kg",
         "features": ["Antimicrobial", "Eco-friendly", "Knife-friendly"]
       },
-      "image_url": "https://placeholder.com/products/prod-002.jpg"
+      "image_url": "/api/images/products/prod-002.jpg"
     },
     {
       "product_id": "prod-003",
@@ -45,7 +45,7 @@
         "weight": "650g",
         "features": ["USB Charging Port", "Touch Control", "Adjustable Arm"]
       },
-      "image_url": "https://placeholder.com/products/prod-003.jpg"
+      "image_url": "/api/images/products/prod-003.jpg"
     },
     {
       "product_id": "prod-004",
@@ -63,7 +63,7 @@
         "weight": "320g",
         "colors": ["Black", "Red", "Blue", "Green"]
       },
-      "image_url": "https://placeholder.com/products/prod-004.jpg"
+      "image_url": "/api/images/products/prod-004.jpg"
     },
     {
       "product_id": "prod-005",
@@ -80,7 +80,7 @@
         "colors": ["Black", "Gray"],
         "features": ["Lumbar Support", "Breathable Mesh", "360° Swivel", "Smooth Casters"]
       },
-      "image_url": "https://placeholder.com/products/prod-005.jpg"
+      "image_url": "/api/images/products/prod-005.jpg"
     }
   ]
 }

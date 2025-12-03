@@ -7,8 +7,31 @@
  */
 
 import { neon } from '@neondatabase/serverless';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+
+// Load environment variables from .dev.vars if it exists
+function loadDevVars() {
+  const devVarsPath = join(process.cwd(), '.dev.vars');
+  if (existsSync(devVarsPath)) {
+    const content = readFileSync(devVarsPath, 'utf-8');
+    content.split('\n').forEach(line => {
+      line = line.trim();
+      if (line && !line.startsWith('#')) {
+        const [key, ...valueParts] = line.split('=');
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=');
+          process.env[key.trim()] = value.trim();
+        }
+      }
+    });
+  }
+}
 
 async function testConnection() {
+  // Load .dev.vars first
+  loadDevVars();
+  
   const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
@@ -39,7 +62,7 @@ async function testConnection() {
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('quotes', 'quote_items')
+      AND table_name IN ('quotes', 'quote_items', 'products', 'admin_sessions')
       ORDER BY table_name
     `;
 
@@ -53,10 +76,14 @@ async function testConnection() {
       // Get row counts
       const quoteCount = await sql`SELECT COUNT(*) as count FROM quotes`;
       const itemCount = await sql`SELECT COUNT(*) as count FROM quote_items`;
+      const productCount = await sql`SELECT COUNT(*) as count FROM products`;
+      const sessionCount = await sql`SELECT COUNT(*) as count FROM admin_sessions`;
       
       console.log('\n📈 Row counts:');
       console.log(`   quotes: ${quoteCount[0].count}`);
       console.log(`   quote_items: ${itemCount[0].count}`);
+      console.log(`   products: ${productCount[0].count}`);
+      console.log(`   admin_sessions: ${sessionCount[0].count}`);
     }
 
   } catch (error: any) {
