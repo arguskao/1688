@@ -116,14 +116,14 @@
   - **Property 15: Image cleanup on deletion**
   - **Validates: Requirements 5.3**
 
-- [-] 6. Authentication API endpoints
+- [x] 6. Authentication API endpoints
   - Create POST /api/admin/login endpoint
   - Create POST /api/admin/logout endpoint
   - Implement rate limiting for login attempts
   - Add CSRF protection
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 7. Product management API endpoints
+- [x] 7. Product management API endpoints
   - Create GET /api/admin/products endpoint with pagination
   - Create POST /api/admin/products endpoint with image upload
   - Create PUT /api/admin/products/:id endpoint with image replacement
@@ -136,7 +136,7 @@
   - **Property 5: Product list completeness**
   - **Validates: Requirements 2.1**
 
-- [ ] 8. Product import functionality
+- [x] 8. Product import functionality
   - Implement CSV parser for product import
   - Implement JSON parser for product import
   - Add validation for each imported product record
@@ -169,7 +169,7 @@
   - **Property 28: Invalid import file rejection**
   - **Validates: Requirements 8.6**
 
-- [ ] 9. Product import API endpoint
+- [x] 9. Product import API endpoint
   - Create POST /api/admin/products/import endpoint
   - Add file upload handling (multipart/form-data)
   - Implement file size limits
