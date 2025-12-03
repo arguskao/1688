@@ -1,0 +1,50 @@
+---
+/**
+ * Admin Login Page
+ * /admin/login
+ * 
+ * Requirements: 1.1, 1.2, 1.3
+ * - Display login form for administrators
+ * - Handle password authentication
+ * - Redirect to admin dashboard on success
+ */
+export const prerender = false;
+
+import AdminLogin from '../../components/AdminLogin';
+import '../../styles/global.css';
+
+// Check if already logged in, redirect to products page
+const sessionCookie = Astro.cookies.get('admin_session');
+if (sessionCookie?.value) {
+  // Validate session before redirecting
+  const { validateSession } = await import('../../lib/auth');
+  const env = Astro.locals.runtime?.env || {};
+  const databaseUrl = env.DATABASE_URL;
+  
+  if (databaseUrl) {
+    try {
+      const isValid = await validateSession(sessionCookie.value, databaseUrl);
+      if (isValid) {
+        return Astro.redirect('/admin/products');
+      }
+    } catch (e) {
+      // Session validation failed, continue to login page
+    }
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>管理員登入 - 後台管理系統</title>
+    <meta name="description" content="管理員登入頁面" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <AdminLogin client:load redirectUrl="/admin/products" />
+  </body>
+</html>

@@ -1,0 +1,83 @@
+---
+/**
+ * Admin Product Edit Page
+ * /admin/products/[id]/edit
+ * 
+ * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5
+ * - Fetch product data and pass to AdminProductForm
+ * - Display form pre-filled with current product data
+ * - Handle form submission to PUT /api/admin/products/:id
+ * - Redirect to product list on success
+ */
+export const prerender = false;
+
+import AdminProductForm from '../../../../components/AdminProductForm';
+import AdminLayout from '../../../../components/AdminLayout';
+import '../../../../styles/global.css';
+
+// Get product ID from URL
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/admin/products');
+}
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+// Validate session and fetch product
+const { validateSession } = await import('../../../../lib/auth');
+const { getProductById } = await import('../../../../lib/productDb');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+let isAuthenticated = false;
+let product = null;
+
+try {
+  isAuthenticated = await validateSession(sessionCookie.value, databaseUrl);
+  
+  if (isAuthenticated) {
+    product = await getProductById(id, databaseUrl);
+  }
+} catch (e) {
+  console.error('Error:', e);
+}
+
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+
+if (!product) {
+  return Astro.redirect('/admin/products');
+}
+
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>編輯產品 - {product.name_en} - 後台管理系統</title>
+    <meta name="description" content="編輯產品" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <AdminLayout client:load currentPage="products">
+      <AdminProductForm 
+        client:load 
+        mode="edit" 
+        product={product}
+      />
+    </AdminLayout>
+  </body>
+</html>

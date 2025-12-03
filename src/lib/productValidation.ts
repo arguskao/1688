@@ -115,8 +115,10 @@ export function validateSKU(sku: string): ValidationError | null {
 
 /**
  * Validate product category
+ * @param category - The category to validate
+ * @param validCategories - Optional list of valid categories (if not provided, uses default list)
  */
-export function validateCategory(category: string): ValidationError | null {
+export function validateCategory(category: string, validCategories?: string[]): ValidationError | null {
   if (!category || category.trim().length === 0) {
     return {
       field: 'category',
@@ -124,10 +126,11 @@ export function validateCategory(category: string): ValidationError | null {
     };
   }
 
-  if (!VALID_CATEGORIES.includes(category as any)) {
+  const allowedCategories = validCategories || VALID_CATEGORIES;
+  if (!allowedCategories.includes(category as any)) {
     return {
       field: 'category',
-      message: `Category must be one of: ${VALID_CATEGORIES.join(', ')}`,
+      message: `Category must be one of: ${allowedCategories.join(', ')}`,
     };
   }
 
@@ -245,7 +248,7 @@ export function validateImageFile(file: File): ValidationError | null {
   // Check file extension
   const fileName = file.name.toLowerCase();
   const hasValidExtension = VALID_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
-  
+
   if (!hasValidExtension) {
     return {
       field: 'image',
@@ -299,11 +302,8 @@ export function validateProduct(
     });
   }
 
-  // Validate category
-  if (product.category !== undefined) {
-    const categoryError = validateCategory(product.category);
-    if (categoryError) errors.push(categoryError);
-  } else {
+  // Validate category - only check if not empty (categories are managed in database)
+  if (!product.category || product.category.trim().length === 0) {
     errors.push({
       field: 'category',
       message: 'Category is required',
@@ -354,7 +354,7 @@ export function validateProduct(
  */
 export function formatValidationErrors(errors: ValidationError[]): string {
   if (errors.length === 0) return '';
-  
+
   return errors.map(err => `${err.field}: ${err.message}`).join('; ');
 }
 

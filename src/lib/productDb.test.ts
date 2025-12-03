@@ -5,12 +5,12 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the neon module
-vi.mock('@neondatabase/serverless', () => ({
-  neon: vi.fn(),
+// Mock the database module
+vi.mock('./database', () => ({
+  getDb: vi.fn(),
 }));
 
-import { neon } from '@neondatabase/serverless';
+import { getDb } from './database';
 import {
   createProduct,
   getProducts,
@@ -33,7 +33,7 @@ describe('Product Database Service', () => {
 
     // Create mock SQL function
     mockSql = vi.fn();
-    (neon as any).mockReturnValue(mockSql);
+    (getDb as any).mockReturnValue(mockSql);
   });
 
   describe('createProduct', () => {

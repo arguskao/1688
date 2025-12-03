@@ -1,0 +1,36 @@
+---
+/**
+ * Admin Index Page
+ * /admin
+ * 
+ * Redirects to login page or products page based on authentication status
+ */
+export const prerender = false;
+
+// Check authentication status
+const sessionCookie = Astro.cookies.get('admin_session');
+
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+// Validate session
+const { validateSession } = await import('../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+try {
+  const isValid = await validateSession(sessionCookie.value, databaseUrl);
+  if (isValid) {
+    return Astro.redirect('/admin/products');
+  }
+} catch (e) {
+  // Session validation failed
+}
+
+return Astro.redirect('/admin/login');
+---

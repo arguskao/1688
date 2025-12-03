@@ -1,9 +1,6 @@
 name = "1688"
 compatibility_date = "2024-01-01"
-
-# Build configuration
-[build]
-command = "pnpm run build"
+pages_build_output_dir = "dist"
 
 # R2 Bucket binding for product images
 [[r2_buckets]]
@@ -11,7 +8,6 @@ binding = "R2"
 bucket_name = "product-images"
 
 # Public variables (non-sensitive)
-# These can be committed to version control
 [vars]
 RATE_LIMIT_PER_MINUTE = "10"
 
@@ -19,13 +15,17 @@ RATE_LIMIT_PER_MINUTE = "10"
 [env.production]
 vars = { RATE_LIMIT_PER_MINUTE = "10" }
 
-# Staging environment configuration (optional)
-[env.staging]
+[[env.production.r2_buckets]]
+binding = "R2"
+bucket_name = "product-images"
+
+# Preview environment configuration
+[env.preview]
 vars = { RATE_LIMIT_PER_MINUTE = "20" }
 
-# Development environment configuration (optional)
-[env.development]
-vars = { RATE_LIMIT_PER_MINUTE = "100" }
+[[env.preview.r2_buckets]]
+binding = "R2"
+bucket_name = "product-images"
 
 # =============================================================================
 # Secrets Configuration
@@ -36,14 +36,13 @@ vars = { RATE_LIMIT_PER_MINUTE = "100" }
 #   wrangler pages secret put DATABASE_URL
 #   wrangler pages secret put EMAIL_API_KEY
 #   wrangler pages secret put BUSINESS_EMAIL
-#
-# For Cloudflare Workers:
-#   wrangler secret put DATABASE_URL
-#   wrangler secret put EMAIL_API_KEY
-#   wrangler secret put BUSINESS_EMAIL
+#   wrangler pages secret put ADMIN_PASSWORD_HASH
+#   wrangler pages secret put SESSION_SECRET
 #
 # Required secrets:
 #   - DATABASE_URL: PostgreSQL connection string (Neon)
 #   - EMAIL_API_KEY: Email service API key (Resend/SendGrid/Mailgun)
 #   - BUSINESS_EMAIL: Email address to receive quote notifications
+#   - ADMIN_PASSWORD_HASH: SHA-256 hash of admin password
+#   - SESSION_SECRET: Random secret for session signing
 # =============================================================================

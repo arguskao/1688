@@ -1,0 +1,50 @@
+---
+/**
+ * Admin Spec Fields Management Page
+ * Manage customizable product specification fields
+ */
+export const prerender = false;
+
+import AdminLayout from '../../../components/AdminLayout';
+import AdminSpecFieldList from '../../../components/AdminSpecFieldList';
+import '../../../styles/global.css';
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+const { validateSession } = await import('../../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+let isAuthenticated = false;
+try {
+  isAuthenticated = await validateSession(sessionCookie.value, databaseUrl);
+} catch (e) {}
+
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>規格欄位管理 - 後台管理系統</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <AdminLayout client:load currentPage="spec-fields">
+      <AdminSpecFieldList client:load />
+    </AdminLayout>
+  </body>
+</html>

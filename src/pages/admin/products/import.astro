@@ -1,0 +1,59 @@
+---
+/**
+ * Admin Product Import Page
+ * /admin/products/import
+ * 
+ * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6
+ * - File upload with drag-and-drop
+ * - Display import progress and results
+ * - Show detailed error report for failed imports
+ */
+export const prerender = false;
+
+import AdminProductImport from '../../../components/AdminProductImport';
+import AdminLayout from '../../../components/AdminLayout';
+import '../../../styles/global.css';
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+// Validate session
+const { validateSession } = await import('../../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+let isAuthenticated = false;
+try {
+  isAuthenticated = await validateSession(sessionCookie.value, databaseUrl);
+} catch (e) {
+  // Session validation failed
+}
+
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>匯入產品 - 後台管理系統</title>
+    <meta name="description" content="批量匯入產品" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <AdminLayout client:load currentPage="import">
+      <AdminProductImport client:load />
+    </AdminLayout>
+  </body>
+</html>

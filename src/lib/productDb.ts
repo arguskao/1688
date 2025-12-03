@@ -3,7 +3,7 @@
  * Handles all database operations for products
  */
 
-import { neon } from '@neondatabase/serverless';
+import { getDb } from './database';
 import type { Product } from '../types/product';
 
 /**
@@ -13,7 +13,7 @@ export async function createProduct(
   product: Omit<Product, 'created_at' | 'updated_at'>,
   databaseUrl: string
 ): Promise<Product> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     INSERT INTO products (
@@ -45,7 +45,7 @@ export async function getProducts(
     category?: string;
   } = {}
 ): Promise<{ products: Product[]; total: number }> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
   const { limit = 50, offset = 0, category } = options;
 
   // Get products
@@ -94,7 +94,7 @@ export async function getProductById(
   productId: string,
   databaseUrl: string
 ): Promise<Product | null> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     SELECT * FROM products
@@ -112,7 +112,7 @@ export async function updateProduct(
   updates: Partial<Omit<Product, 'product_id' | 'created_at' | 'updated_at'>>,
   databaseUrl: string
 ): Promise<Product | null> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   if (Object.keys(updates).length === 0) {
     // No updates provided
@@ -150,7 +150,7 @@ export async function deleteProduct(
   productId: string,
   databaseUrl: string
 ): Promise<boolean> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     DELETE FROM products
@@ -168,7 +168,7 @@ export async function productExists(
   productId: string,
   databaseUrl: string
 ): Promise<boolean> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     SELECT 1 FROM products
@@ -187,7 +187,7 @@ export async function isSkuTaken(
   excludeProductId: string | null,
   databaseUrl: string
 ): Promise<boolean> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   let result;
   if (excludeProductId) {
@@ -211,7 +211,7 @@ export async function isSkuTaken(
  * Get all unique categories
  */
 export async function getCategories(databaseUrl: string): Promise<string[]> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     SELECT DISTINCT category
@@ -233,7 +233,7 @@ export async function searchProducts(
     offset?: number;
   } = {}
 ): Promise<{ products: Product[]; total: number }> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
   const { limit = 50, offset = 0 } = options;
 
   const searchPattern = `%${query}%`;

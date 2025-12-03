@@ -2,8 +2,8 @@
 export const prerender = false; // Use server-side rendering
 
 import { getProductById } from '../../lib/products';
-import type { Product } from '../../types/product';
 import { AddToQuoteButton } from '../../components/AddToQuoteButton';
+import { getAllSpecFields } from '../../lib/specFieldDb';
 
 const { id } = Astro.params;
 
@@ -16,6 +16,33 @@ const product = await getProductById(id, Astro.locals.runtime);
 if (!product) {
   return Astro.redirect('/products');
 }
+
+// Get spec field definitions - only show fields defined in spec_fields table
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+let specFields: Array<{ field_name: string; field_label: string }> = [];
+
+if (databaseUrl) {
+  try {
+    specFields = await getAllSpecFields(databaseUrl);
+  } catch (e) {
+    console.error('Failed to fetch spec fields:', e);
+  }
+}
+
+// Filter specs_json to only include defined fields
+const displaySpecs = specFields
+  .filter(field => product.specs_json && product.specs_json[field.field_name] !== undefined)
+  .map(field => ({
+    label: field.field_label,
+    value: product.specs_json[field.field_name]
+  }));
+
+// Convert newlines to <br> tags for HTML rendering
+const formattedDescription = product.description_en
+  .replace(/\r\n/g, '<br>')
+  .replace(/\n/g, '<br>')
+  .replace(/\r/g, '<br>');
 ---
 
 <!DOCTYPE html>
@@ -113,21 +140,25 @@ if (!product) {
 
             <div class="my-6 border-t border-gray-200"></div>
 
-            <h2 class="text-xl font-semibold text-gray-900 mb-3">產品規格</h2>
-            <div class="bg-gray-50 rounded-lg p-4 mb-6">
-              <dl class="space-y-2">
-                {Object.entries(product.specs_json).map(([key, value]) => (
-                  <div class="flex flex-col sm:flex-row">
-                    <dt class="font-semibold text-gray-700 capitalize sm:w-1/3">
-                      {key.replace(/_/g, ' ')}:
-                    </dt>
-                    <dd class="text-gray-600 sm:w-2/3">
-                      {Array.isArray(value) ? value.join(', ') : String(value)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+            {displaySpecs.length > 0 && (
+              <>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">產品規格</h2>
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                  <dl class="space-y-2">
+                    {displaySpecs.map((spec) => (
+                      <div class="flex flex-col sm:flex-row">
+                        <dt class="font-semibold text-gray-700 sm:w-1/3">
+                          {spec.label}:
+                        </dt>
+                        <dd class="text-gray-600 sm:w-2/3">
+                          {Array.isArray(spec.value) ? spec.value.join(', ') : String(spec.value)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </>
+            )}
 
             <!-- Add to Quote Button -->
             <div class="mt-auto">
@@ -149,8 +180,7 @@ if (!product) {
         <!-- Product Description - Full Width at Bottom -->
         <div class="border-t border-gray-200 p-8">
           <h2 class="text-2xl font-bold text-gray-900 mb-4">產品描述</h2>
-          <div class="prose max-w-none text-gray-700 leading-relaxed mb-8">
-            <p>{product.description_en}</p>
+          <div class="prose max-w-none text-gray-700 leading-relaxed mb-8" set:html={formattedDescription}>
           </div>
 
           <!-- Product Images Gallery -->
@@ -158,7 +188,7 @@ if (!product) {
             <div class="mt-8">
               <h3 class="text-xl font-semibold text-gray-900 mb-4">產品圖片</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {product.images.map((image: any, index: number) => (
+                {product.images.map((image: any) => (
                   <div class="bg-gray-100 rounded-lg overflow-hidden">
                     <img 
                       src={image.url} 

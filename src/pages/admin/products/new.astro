@@ -1,0 +1,59 @@
+---
+/**
+ * Admin Product Create Page
+ * /admin/products/new
+ * 
+ * Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6
+ * - Display product creation form
+ * - Handle form submission to POST /api/admin/products
+ * - Redirect to product list on success
+ */
+export const prerender = false;
+
+import AdminProductForm from '../../../components/AdminProductForm';
+import AdminLayout from '../../../components/AdminLayout';
+import '../../../styles/global.css';
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+// Validate session
+const { validateSession } = await import('../../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+let isAuthenticated = false;
+try {
+  isAuthenticated = await validateSession(sessionCookie.value, databaseUrl);
+} catch (e) {
+  // Session validation failed
+}
+
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>新增產品 - 後台管理系統</title>
+    <meta name="description" content="新增產品" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <AdminLayout client:load currentPage="create">
+      <AdminProductForm client:load mode="create" />
+    </AdminLayout>
+  </body>
+</html>

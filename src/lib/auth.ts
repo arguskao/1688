@@ -3,7 +3,7 @@
  * Handles password verification, session management, and authentication middleware
  */
 
-import { neon } from '@neondatabase/serverless';
+import { getDb } from './database';
 
 /**
  * Session configuration
@@ -43,7 +43,7 @@ export function generateSessionId(): string {
  * Create a new session in the database
  */
 export async function createSession(databaseUrl: string): Promise<string> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
   const sessionId = generateSessionId();
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
 
@@ -62,7 +62,7 @@ export async function validateSession(
   sessionId: string,
   databaseUrl: string
 ): Promise<boolean> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     SELECT session_id, expires_at
@@ -81,7 +81,7 @@ export async function deleteSession(
   sessionId: string,
   databaseUrl: string
 ): Promise<void> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   await sql`
     DELETE FROM admin_sessions
@@ -93,7 +93,7 @@ export async function deleteSession(
  * Clean up expired sessions
  */
 export async function cleanupExpiredSessions(databaseUrl: string): Promise<number> {
-  const sql = neon(databaseUrl);
+  const sql = getDb(databaseUrl);
 
   const result = await sql`
     DELETE FROM admin_sessions

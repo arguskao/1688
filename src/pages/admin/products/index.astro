@@ -1,0 +1,60 @@
+---
+/**
+ * Admin Products List Page
+ * /admin/products
+ * 
+ * Requirements: 2.1, 2.2, 2.3, 2.4, 5.1
+ * - Display all products with basic information
+ * - Show product ID, name, category, and thumbnail
+ * - Provide edit and delete action buttons
+ * - Handle empty state
+ */
+export const prerender = false;
+
+import AdminProductList from '../../../components/AdminProductList';
+import AdminLayout from '../../../components/AdminLayout';
+import '../../../styles/global.css';
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+// Validate session
+const { validateSession } = await import('../../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+let isAuthenticated = false;
+try {
+  isAuthenticated = await validateSession(sessionCookie.value, databaseUrl);
+} catch (e) {
+  // Session validation failed
+}
+
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>產品管理 - 後台管理系統</title>
+    <meta name="description" content="管理產品列表" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <AdminLayout client:load currentPage="products">
+      <AdminProductList client:load />
+    </AdminLayout>
+  </body>
+</html>
