@@ -37,12 +37,12 @@ export function saveQuoteListToStorage(items: StoredQuoteItem[]): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (error) {
     console.error('Failed to save to storage:', error);
-    
+
     // Check if it's a quota exceeded error
     if (error instanceof DOMException && error.name === 'QuotaExceededError') {
       throw new Error('儲存空間已滿，請清除部分項目後再試');
     }
-    
+
     throw new Error('無法儲存詢價清單');
   }
 }
@@ -66,7 +66,7 @@ export function clearQuoteListFromStorage(): void {
 export function addToQuoteList(item: Omit<StoredQuoteItem, 'quantity'> & { quantity?: number }): void {
   const items = getQuoteListFromStorage();
   const existingIndex = items.findIndex(i => i.productId === item.productId);
-  
+
   if (existingIndex >= 0) {
     // Product exists, increment quantity
     items[existingIndex].quantity += item.quantity || 1;
@@ -77,7 +77,7 @@ export function addToQuoteList(item: Omit<StoredQuoteItem, 'quantity'> & { quant
       quantity: item.quantity || 1
     });
   }
-  
+
   saveQuoteListToStorage(items);
 }
 
@@ -90,10 +90,10 @@ export function updateQuantity(productId: string, quantity: number): void {
   if (quantity <= 0) {
     throw new Error('數量必須大於 0');
   }
-  
+
   const items = getQuoteListFromStorage();
   const item = items.find(i => i.productId === productId);
-  
+
   if (item) {
     item.quantity = quantity;
     saveQuoteListToStorage(items);
@@ -127,6 +127,17 @@ export function getQuoteListCount(): number {
 export function isInQuoteList(productId: string): boolean {
   const items = getQuoteListFromStorage();
   return items.some(i => i.productId === productId);
+}
+
+/**
+ * Get the quantity of a specific item in the quote list
+ * @param productId - Product ID to check
+ * @returns quantity of the item, or 0 if not found
+ */
+export function getQuoteItemQuantity(productId: string): number {
+  const items = getQuoteListFromStorage();
+  const item = items.find(i => i.productId === productId);
+  return item?.quantity || 0;
 }
 
 /**

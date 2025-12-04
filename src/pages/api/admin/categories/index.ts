@@ -6,79 +6,70 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { checkAuth, unauthorizedResponse, errorResponse, successResponse, getEnv } from '../../../../lib/apiAuth';
+import { checkAuth, getEnv } from '../../../../lib/apiAuth';
+import { ApiResponse } from '../../../../lib/apiResponse';
 import { getAllCategories, createCategory, categoryNameExists } from '../../../../lib/categoryDb';
 
 /**
  * GET - List all categories
  */
 export const GET: APIRoute = async ({ cookies, locals }) => {
-    try {
+    return ApiResponse.withErrorHandling(async () => {
         const env = getEnv(locals.runtime);
         const databaseUrl = env.DATABASE_URL;
 
         if (!databaseUrl) {
-            return errorResponse('Database not configured', 500);
+            return ApiResponse.error('Database not configured', 500);
         }
 
-        // Check authentication
         const auth = await checkAuth(cookies, databaseUrl);
         if (!auth.authenticated) {
-            return unauthorizedResponse(auth.error);
+            return ApiResponse.unauthorized(auth.error);
         }
 
         const categories = await getAllCategories(databaseUrl);
-
-        return successResponse({ categories });
-    } catch (error: any) {
-        console.error('Error fetching categories:', error);
-        return errorResponse('Failed to fetch categories');
-    }
+        return ApiResponse.success({ categories });
+    }, 'GET /api/admin/categories');
 };
 
 /**
  * POST - Create new category
  */
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
-    try {
+    return ApiResponse.withErrorHandling(async () => {
         const env = getEnv(locals.runtime);
         const databaseUrl = env.DATABASE_URL;
 
         if (!databaseUrl) {
-            return errorResponse('Database not configured', 500);
+            return ApiResponse.error('Database not configured', 500);
         }
 
-        // Check authentication
         const auth = await checkAuth(cookies, databaseUrl);
         if (!auth.authenticated) {
-            return unauthorizedResponse(auth.error);
+            return ApiResponse.unauthorized(auth.error);
         }
 
         const body = await request.json();
         const { name, display_order } = body;
 
-        // Validate
+        const errors: Array<{ field: string; message: string }> = [];
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
-            return errorResponse('Category name is required', 400);
+            errors.push({ field: 'name', message: 'Category name is required' });
+        } else if (name.length > 50) {
+            errors.push({ field: 'name', message: 'Category name must not exceed 50 characters' });
         }
 
-        if (name.length > 50) {
-            return errorResponse('Category name must not exceed 50 characters', 400);
+        if (errors.length > 0) {
+            return ApiResponse.validationError(errors);
+        }
+
+        const exists = await categoryNameExists(name.trim(), null, databaseUrl);
+        if (exists) {
+            return ApiResponse.conflict('Category name already exists');
         }
 
         const displayOrder = typeof display_order === 'number' ? display_order : 0;
-
-        // Check if name already exists
-        const exists = await categoryNameExists(name.trim(), null, databaseUrl);
-        if (exists) {
-            return errorResponse('Category name already exists', 409);
-        }
-
         const category = await createCategory(name.trim(), displayOrder, databaseUrl);
-
-        return successResponse({ category }, 201);
-    } catch (error: any) {
-        console.error('Error creating category:', error);
-        return errorResponse('Failed to create category');
-    }
+        return ApiResponse.created({ category });
+    }, 'POST /api/admin/categories');
 };

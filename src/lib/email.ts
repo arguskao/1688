@@ -176,3 +176,148 @@ export async function sendEmailNotification(
     throw error;
   }
 }
+
+
+/**
+ * Quote response email for customers
+ */
+interface QuoteWithItemsForEmail {
+  quote_id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  company_name: string;
+  message?: string;
+  created_at: string;
+  replied_at?: string;
+  items: Array<{
+    product_name?: string;
+    product_id: string;
+    sku?: string;
+    quantity: number;
+    unit?: string;
+    unit_price?: number;
+    notes?: string;
+  }>;
+}
+
+/**
+ * Generate HTML email template for quote response to customer
+ */
+export function generateQuoteResponseTemplate(quote: QuoteWithItemsForEmail): string {
+  const total = quote.items.reduce((sum, item) => sum + (item.unit_price || 0) * item.quantity, 0);
+
+  const itemsHtml = quote.items.map((item, index) => `
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 12px; text-align: center;">${index + 1}</td>
+      <td style="padding: 12px; text-align: left;">${escapeHtml(item.product_name || item.product_id)}</td>
+      <td style="padding: 12px; text-align: center;">${item.unit || '式'}</td>
+      <td style="padding: 12px; text-align: center;">${item.quantity}</td>
+      <td style="padding: 12px; text-align: right;">${item.unit_price?.toLocaleString() || '-'}</td>
+      <td style="padding: 12px; text-align: right;">${item.unit_price ? (item.unit_price * item.quantity).toLocaleString() : '-'}</td>
+    </tr>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>報價單 #${quote.quote_id.substring(0, 8).toUpperCase()}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 700px; margin: 0 auto; padding: 20px;">
+  <div style="background-color: #10b981; padding: 20px; border-radius: 8px; margin-bottom: 20px; color: white;">
+    <h1 style="margin: 0 0 10px 0;">📋 報價單</h1>
+    <p style="margin: 0; font-size: 14px;">報價單編號: <strong>#${quote.quote_id.substring(0, 8).toUpperCase()}</strong></p>
+  </div>
+
+  <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px;">
+    <p style="margin: 0 0 10px 0;">親愛的 <strong>${escapeHtml(quote.customer_name)}</strong> 您好，</p>
+    <p style="margin: 0;">感謝您的詢價，以下是我們為您準備的報價單：</p>
+  </div>
+
+  <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px;">
+    <h2 style="color: #1f2937; margin-top: 0; border-bottom: 2px solid #10b981; padding-bottom: 10px;">📦 報價明細</h2>
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+      <thead>
+        <tr style="background-color: #f9fafb;">
+          <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; width: 50px;">項次</th>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">項目</th>
+          <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; width: 60px;">單位</th>
+          <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; width: 60px;">數量</th>
+          <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb; width: 100px;">單價</th>
+          <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb; width: 100px;">金額</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+        <tr style="background-color: #f0fdf4;">
+          <td colspan="5" style="padding: 12px; text-align: right; font-weight: bold; font-size: 16px;">總計</td>
+          <td style="padding: 12px; text-align: right; font-weight: bold; font-size: 18px; color: #059669;">$${total.toLocaleString()}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 20px;">
+    <p style="margin: 0; color: #92400e; font-size: 14px;">
+      <strong>⏰ 注意:</strong> 本報價單有效期限為 15 天，如有任何問題請與我們聯繫。
+    </p>
+  </div>
+
+  <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px;">
+    <p style="margin: 0;">如您對此報價有任何疑問，歡迎隨時與我們聯繫。</p>
+    <p style="margin: 10px 0 0 0;">期待與您合作！</p>
+  </div>
+
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px;">
+    <p>此郵件由詢價清單系統自動發送</p>
+    <p>報價時間: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Send quote response email to customer
+ */
+export async function sendQuoteResponseEmail(
+  env: { EMAIL_API_KEY: string },
+  quote: QuoteWithItemsForEmail
+): Promise<void> {
+  if (!env.EMAIL_API_KEY) {
+    console.warn('EMAIL_API_KEY not configured, skipping quote response email');
+    return;
+  }
+
+  const emailHtml = generateQuoteResponseTemplate(quote);
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.EMAIL_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Quote System <noreply@yourdomain.com>',
+        to: quote.customer_email,
+        subject: `報價單 #${quote.quote_id.substring(0, 8).toUpperCase()} - 感謝您的詢價`,
+        html: emailHtml
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Email service error: ${response.status} ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('Quote response email sent successfully:', result);
+  } catch (error) {
+    console.error('Failed to send quote response email:', error);
+    throw error;
+  }
+}

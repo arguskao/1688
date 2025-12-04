@@ -1,0 +1,52 @@
+---
+/**
+ * Admin Settings Page
+ * /admin/settings
+ */
+export const prerender = false;
+
+import AdminLayout from '../../components/AdminLayout';
+import AdminSettings from '../../components/AdminSettings';
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+const { validateSession } = await import('../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+try {
+  const isValid = await validateSession(sessionCookie.value, databaseUrl);
+  if (!isValid) {
+    return Astro.redirect('/admin/login');
+  }
+} catch (e) {
+  return Astro.redirect('/admin/login');
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司設定 - 後台管理</title>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+</head>
+<body>
+    <AdminLayout client:load currentPage="settings">
+        <div class="px-4 sm:px-0">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">公司設定</h1>
+            <AdminSettings client:load />
+        </div>
+    </AdminLayout>
+</body>
+</html>

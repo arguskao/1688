@@ -3,9 +3,14 @@ export const prerender = false; // Use server-side rendering
 
 import { getAllProducts, getAllCategories } from '../../lib/products';
 import { AddToQuoteButton } from '../../components/AddToQuoteButton';
+import '../../styles/global.css';
 
 const products = await getAllProducts(Astro.locals.runtime);
 const categories = await getAllCategories(Astro.locals.runtime);
+
+const SITE_URL = import.meta.env.SITE || 'https://0e3d34ef.1688-dek.pages.dev';
+const pageUrl = `${SITE_URL}/products`;
+const categoryList = categories.join('、');
 ---
 
 <!DOCTYPE html>
@@ -13,27 +18,64 @@ const categories = await getAllCategories(Astro.locals.runtime);
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2563eb" />
     
     <!-- Primary Meta Tags -->
     <title>產品目錄 - 瀏覽所有產品 | 詢價清單系統</title>
     <meta name="title" content="產品目錄 - 瀏覽所有產品 | 詢價清單系統" />
-    <meta name="description" content="瀏覽我們的完整產品目錄，包含 {categories.join('、')} 等多種分類。選擇您感興趣的產品加入詢價清單，一次詢問多個產品價格。" />
-    <meta name="keywords" content="產品目錄, {categories.join(', ')}, B2B產品, 批發詢價" />
+    <meta name="description" content={`瀏覽我們的完整產品目錄，包含${categoryList}等多種分類。選擇您感興趣的產品加入詢價清單，一次詢問多個產品價格。`} />
+    <meta name="keywords" content={`產品目錄, ${categories.join(', ')}, B2B產品, 批發詢價`} />
+    <meta name="author" content="詢價清單系統" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://yourdomain.com/products" />
+    <meta property="og:url" content={pageUrl} />
     <meta property="og:title" content="產品目錄 - 瀏覽所有產品" />
     <meta property="og:description" content="瀏覽我們的完整產品目錄，選擇您感興趣的產品加入詢價清單" />
+    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:site_name" content="詢價清單系統" />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary" />
-    <meta property="twitter:url" content="https://yourdomain.com/products" />
-    <meta property="twitter:title" content="產品目錄 - 瀏覽所有產品" />
-    <meta property="twitter:description" content="瀏覽我們的完整產品目錄，選擇您感興趣的產品加入詢價清單" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content={pageUrl} />
+    <meta name="twitter:title" content="產品目錄 - 瀏覽所有產品" />
+    <meta name="twitter:description" content="瀏覽我們的完整產品目錄，選擇您感興趣的產品加入詢價清單" />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://yourdomain.com/products" />
+    <link rel="canonical" href={pageUrl} />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Structured Data - BreadcrumbList -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首頁", "item": SITE_URL },
+        { "@type": "ListItem", "position": 2, "name": "產品目錄", "item": pageUrl }
+      ]
+    })} />
+    
+    <!-- Structured Data - ItemList -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "產品目錄",
+      "numberOfItems": products.length,
+      "itemListElement": products.slice(0, 10).map((p, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "item": {
+          "@type": "Product",
+          "name": p.name_en,
+          "url": `${SITE_URL}/products/${p.product_id}`,
+          "image": p.image_url,
+          "sku": p.sku
+        }
+      }))
+    })} />
   </head>
   <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8">
@@ -95,11 +137,11 @@ const categories = await getAllCategories(Astro.locals.runtime);
               <div class="flex gap-2">
                 <a 
                   href={`/products/${product.product_id}`}
-                  class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded transition-colors"
+                  class="w-2/5 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded transition-colors"
                 >
                   查看詳情
                 </a>
-                <div class="flex-1">
+                <div class="w-3/5">
                   <AddToQuoteButton
                     client:load
                     productId={product.product_id}

@@ -4,6 +4,7 @@ export const prerender = false; // Use server-side rendering
 import { getProductById } from '../../lib/products';
 import { AddToQuoteButton } from '../../components/AddToQuoteButton';
 import { getAllSpecFields } from '../../lib/specFieldDb';
+import '../../styles/global.css';
 
 const { id } = Astro.params;
 
@@ -43,6 +44,10 @@ const formattedDescription = product.description_en
   .replace(/\r\n/g, '<br>')
   .replace(/\n/g, '<br>')
   .replace(/\r/g, '<br>');
+
+const SITE_URL = import.meta.env.SITE || 'https://0e3d34ef.1688-dek.pages.dev';
+const pageUrl = `${SITE_URL}/products/${product.product_id}`;
+const shortDescription = product.description_en.substring(0, 160);
 ---
 
 <!DOCTYPE html>
@@ -50,49 +55,69 @@ const formattedDescription = product.description_en
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2563eb" />
     
     <!-- Primary Meta Tags -->
     <title>{product.name_en} - {product.category} | 詢價清單系統</title>
     <meta name="title" content={`${product.name_en} - ${product.category} | 詢價清單系統`} />
-    <meta name="description" content={product.description_en} />
+    <meta name="description" content={shortDescription} />
     <meta name="keywords" content={`${product.name_en}, ${product.sku}, ${product.category}, B2B, 詢價, 批發`} />
     <meta name="author" content="詢價清單系統" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="product" />
-    <meta property="og:url" content={`https://yourdomain.com/products/${product.product_id}`} />
+    <meta property="og:url" content={pageUrl} />
     <meta property="og:title" content={`${product.name_en} - ${product.category}`} />
-    <meta property="og:description" content={product.description_en} />
+    <meta property="og:description" content={shortDescription} />
     <meta property="og:image" content={product.image_url} />
     <meta property="og:site_name" content="詢價清單系統" />
+    <meta property="og:locale" content="zh_TW" />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={`https://yourdomain.com/products/${product.product_id}`} />
-    <meta property="twitter:title" content={`${product.name_en} - ${product.category}`} />
-    <meta property="twitter:description" content={product.description_en} />
-    <meta property="twitter:image" content={product.image_url} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={pageUrl} />
+    <meta name="twitter:title" content={`${product.name_en} - ${product.category}`} />
+    <meta name="twitter:description" content={shortDescription} />
+    <meta name="twitter:image" content={product.image_url} />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={pageUrl} />
+    
+    <!-- Breadcrumb Schema.org -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首頁", "item": SITE_URL },
+        { "@type": "ListItem", "position": 2, "name": "產品目錄", "item": `${SITE_URL}/products` },
+        { "@type": "ListItem", "position": 3, "name": product.name_en, "item": pageUrl }
+      ]
+    })} />
     
     <!-- Product Schema.org -->
-    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org/",
       "@type": "Product",
       "name": product.name_en,
       "image": product.image_url,
-      "description": product.description_en,
+      "description": shortDescription,
       "sku": product.sku,
       "category": product.category,
+      "brand": {
+        "@type": "Brand",
+        "name": "詢價清單系統"
+      },
       "offers": {
         "@type": "Offer",
         "availability": "https://schema.org/InStock",
-        "priceCurrency": "TWD"
+        "priceCurrency": "TWD",
+        "url": pageUrl
       }
     })} />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href={`https://yourdomain.com/products/${product.product_id}`} />
-    
-    <link rel="stylesheet" href="/src/styles/global.css" />
   </head>
   <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-6xl">

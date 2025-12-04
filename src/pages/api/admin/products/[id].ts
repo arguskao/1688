@@ -6,7 +6,8 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { checkAuth, unauthorizedResponse, errorResponse, successResponse, getEnv } from '../../../../lib/apiAuth';
+import { checkAuth, getEnv } from '../../../../lib/apiAuth';
+import { ApiResponse } from '../../../../lib/apiResponse';
 import { getProductById, updateProduct, deleteProduct } from '../../../../lib/productDb';
 import { validateProduct } from '../../../../lib/productValidation';
 import { uploadImage, deleteImage } from '../../../../lib/imageManagement';
@@ -15,38 +16,31 @@ import { uploadImage, deleteImage } from '../../../../lib/imageManagement';
  * PUT - Update product
  */
 export const PUT: APIRoute = async ({ request, cookies, params, locals }) => {
-  try {
+  return ApiResponse.withErrorHandling(async () => {
     const { id } = params;
-
     if (!id) {
-      return errorResponse('Product ID is required', 400);
+      return ApiResponse.badRequest('Product ID is required');
     }
 
-    // Get environment
     const env = getEnv(locals.runtime);
     const databaseUrl = env.DATABASE_URL;
     const r2Bucket = env.R2_BUCKET;
 
     if (!databaseUrl) {
-      return errorResponse('Database not configured', 500);
+      return ApiResponse.error('Database not configured', 500);
     }
 
-    // Check authentication
     const auth = await checkAuth(cookies, databaseUrl);
     if (!auth.authenticated) {
-      return unauthorizedResponse(auth.error);
+      return ApiResponse.unauthorized(auth.error);
     }
 
-    // Check if product exists
     const existingProduct = await getProductById(id, databaseUrl);
     if (!existingProduct) {
-      return errorResponse('Product not found', 404);
+      return ApiResponse.notFound('Product not found');
     }
 
-    // Parse multipart form data
     const formData = await request.formData();
-
-    // Extract product data
     const productData = {
       name_en: formData.get('name_en') as string,
       sku: formData.get('sku') as string,
@@ -57,113 +51,66 @@ export const PUT: APIRoute = async ({ request, cookies, params, locals }) => {
       image_url: formData.get('image_url') as string || existingProduct.image_url,
     };
 
-    // Validate product data
     const validation = validateProduct({ ...productData, product_id: id });
     if (!validation.valid) {
-      const errorMessages = validation.errors.map(e => e.message).join(', ');
-      return errorResponse(errorMessages, 400);
+      return ApiResponse.validationError(validation.errors);
     }
 
-    // Handle image replacement if new image provided
     const imageFile = formData.get('image') as File | null;
     if (imageFile && r2Bucket) {
-      try {
-        // Upload new image
-        const newImageUrl = await uploadImage(imageFile, id, r2Bucket);
-
-        // Delete old image if it exists and is from R2
-        if (existingProduct.image_url && existingProduct.image_url.includes('r2.dev')) {
-          try {
-            await deleteImage(existingProduct.image_url, r2Bucket);
-          } catch (error) {
-            console.warn('Failed to delete old image:', error);
-          }
-        }
-
-        productData.image_url = newImageUrl;
-      } catch (error: any) {
-        return errorResponse(`Image upload failed: ${error.message}`, 400);
+      const newImageUrl = await uploadImage(imageFile, id, r2Bucket);
+      if (existingProduct.image_url?.includes('r2.dev')) {
+        try { await deleteImage(existingProduct.image_url, r2Bucket); } catch { }
       }
+      productData.image_url = newImageUrl;
     }
 
-    // Update product in database
     const updatedProduct = await updateProduct(id, productData, databaseUrl);
-
     if (!updatedProduct) {
-      return errorResponse('Failed to update product', 500);
+      return ApiResponse.error('Failed to update product', 500);
     }
 
-    return successResponse({
-      message: 'Product updated successfully',
-      product: updatedProduct
-    });
-
-  } catch (error: any) {
-    console.error('Error updating product:', error);
-
-    if (error.message?.includes('duplicate key')) {
-      return errorResponse('SKU already exists', 409);
-    }
-
-    return errorResponse('Failed to update product');
-  }
+    return ApiResponse.success({ message: 'Product updated successfully', product: updatedProduct });
+  }, 'PUT /api/admin/products/:id');
 };
 
 /**
  * DELETE - Delete product
  */
 export const DELETE: APIRoute = async ({ cookies, params, locals }) => {
-  try {
+  return ApiResponse.withErrorHandling(async () => {
     const { id } = params;
-
     if (!id) {
-      return errorResponse('Product ID is required', 400);
+      return ApiResponse.badRequest('Product ID is required');
     }
 
-    // Get environment
     const env = getEnv(locals.runtime);
     const databaseUrl = env.DATABASE_URL;
     const r2Bucket = env.R2_BUCKET;
 
     if (!databaseUrl) {
-      return errorResponse('Database not configured', 500);
+      return ApiResponse.error('Database not configured', 500);
     }
 
-    // Check authentication
     const auth = await checkAuth(cookies, databaseUrl);
     if (!auth.authenticated) {
-      return unauthorizedResponse(auth.error);
+      return ApiResponse.unauthorized(auth.error);
     }
 
-    // Get product to check if it exists and get image URL
     const product = await getProductById(id, databaseUrl);
     if (!product) {
-      return errorResponse('Product not found', 404);
+      return ApiResponse.notFound('Product not found');
     }
 
-    // Delete product from database
     const deleted = await deleteProduct(id, databaseUrl);
-
     if (!deleted) {
-      return errorResponse('Failed to delete product', 500);
+      return ApiResponse.error('Failed to delete product', 500);
     }
 
-    // Delete image from R2 if it exists
-    if (product.image_url && product.image_url.includes('r2.dev') && r2Bucket) {
-      try {
-        await deleteImage(product.image_url, r2Bucket);
-      } catch (error) {
-        console.warn('Failed to delete product image:', error);
-        // Don't fail the request if image deletion fails
-      }
+    if (product.image_url?.includes('r2.dev') && r2Bucket) {
+      try { await deleteImage(product.image_url, r2Bucket); } catch { }
     }
 
-    return successResponse({
-      message: 'Product deleted successfully'
-    });
-
-  } catch (error: any) {
-    console.error('Error deleting product:', error);
-    return errorResponse('Failed to delete product');
-  }
+    return ApiResponse.success({ message: 'Product deleted successfully' });
+  }, 'DELETE /api/admin/products/:id');
 };

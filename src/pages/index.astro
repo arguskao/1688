@@ -1,38 +1,70 @@
 ---
 // Homepage
+import '../styles/global.css';
+
+const SITE_URL = import.meta.env.SITE || 'https://0e3d34ef.1688-dek.pages.dev';
 ---
 
 <!DOCTYPE html>
 <html lang="zh-TW">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2563eb" />
     
     <!-- Primary Meta Tags -->
     <title>詢價清單系統 - B2B 產品詢價解決方案</title>
     <meta name="title" content="詢價清單系統 - B2B 產品詢價解決方案" />
     <meta name="description" content="專業的 B2B 產品詢價系統，輕鬆管理您的產品詢價需求。瀏覽產品、加入詢價清單、一次性提交多個產品詢價請求。" />
     <meta name="keywords" content="B2B, 詢價系統, 產品詢價, 批發, 報價, 詢價清單" />
+    <meta name="author" content="詢價清單系統" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://yourdomain.com/" />
+    <meta property="og:url" content={SITE_URL} />
     <meta property="og:title" content="詢價清單系統 - B2B 產品詢價解決方案" />
     <meta property="og:description" content="專業的 B2B 產品詢價系統，輕鬆管理您的產品詢價需求" />
-    <meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
+    <meta property="og:image" content={`${SITE_URL}/og-image.jpg`} />
+    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:site_name" content="詢價清單系統" />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://yourdomain.com/" />
-    <meta property="twitter:title" content="詢價清單系統 - B2B 產品詢價解決方案" />
-    <meta property="twitter:description" content="專業的 B2B 產品詢價系統，輕鬆管理您的產品詢價需求" />
-    <meta property="twitter:image" content="https://yourdomain.com/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={SITE_URL} />
+    <meta name="twitter:title" content="詢價清單系統 - B2B 產品詢價解決方案" />
+    <meta name="twitter:description" content="專業的 B2B 產品詢價系統，輕鬆管理您的產品詢價需求" />
+    <meta name="twitter:image" content={`${SITE_URL}/og-image.jpg`} />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://yourdomain.com/" />
+    <link rel="canonical" href={SITE_URL} />
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "詢價清單系統",
+      "description": "專業的 B2B 產品詢價系統",
+      "url": SITE_URL,
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": `${SITE_URL}/products?search={search_term_string}`,
+        "query-input": "required name=search_term_string"
+      }
+    })} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "詢價清單系統",
+      "url": SITE_URL,
+      "logo": `${SITE_URL}/logo.png`,
+      "description": "專業的 B2B 產品詢價解決方案"
+    })} />
   </head>
   <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     <div class="container mx-auto px-4 py-16">
@@ -68,7 +100,7 @@
         <!-- Features -->
         <div class="grid md:grid-cols-3 gap-8 mt-16">
           <div class="bg-white rounded-lg p-6 shadow-md">
-            <div class="text-4xl mb-4">📦</div>
+            <div class="text-4xl mb-4" role="img" aria-label="產品圖示">📦</div>
             <h3 class="text-xl font-semibold text-gray-900 mb-2">豐富產品</h3>
             <p class="text-gray-600">
               多樣化的產品選擇，滿足您的各種需求
@@ -76,7 +108,7 @@
           </div>
           
           <div class="bg-white rounded-lg p-6 shadow-md">
-            <div class="text-4xl mb-4">✉️</div>
+            <div class="text-4xl mb-4" role="img" aria-label="郵件圖示">✉️</div>
             <h3 class="text-xl font-semibold text-gray-900 mb-2">快速詢價</h3>
             <p class="text-gray-600">
               一次性提交多個產品詢價，節省時間
@@ -84,7 +116,7 @@
           </div>
           
           <div class="bg-white rounded-lg p-6 shadow-md">
-            <div class="text-4xl mb-4">🤝</div>
+            <div class="text-4xl mb-4" role="img" aria-label="握手圖示">🤝</div>
             <h3 class="text-xl font-semibold text-gray-900 mb-2">專業服務</h3>
             <p class="text-gray-600">
               專業團隊快速回應，提供最佳報價

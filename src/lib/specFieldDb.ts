@@ -5,6 +5,7 @@
 
 import { getDb } from './database';
 import { createRepository } from './baseRepository';
+import { cache, CacheKeys, CacheTTL } from './cache';
 import type { SpecField } from '../types';
 
 export type { SpecField };
@@ -24,16 +25,29 @@ const specFieldRepo = createRepository<SpecField>({
 });
 
 /**
- * Get all spec fields ordered by display_order
+ * Invalidate spec fields cache
+ */
+export function invalidateSpecFieldCache(): void {
+    cache.deleteByPrefix('spec_fields:');
+}
+
+/**
+ * Get all spec fields ordered by display_order (with caching)
  */
 export async function getAllSpecFields(databaseUrl: string): Promise<SpecField[]> {
-    const sql = getDb(databaseUrl);
-    const result = await sql`
-        SELECT id, field_name, field_label, field_type, options, display_order, is_required, created_at, updated_at
-        FROM spec_fields
-        ORDER BY display_order ASC, field_name ASC
-    `;
-    return result.map(parseSpecField);
+    return cache.getOrSet(
+        CacheKeys.specFields(),
+        async () => {
+            const sql = getDb(databaseUrl);
+            const result = await sql`
+                SELECT id, field_name, field_label, field_type, options, display_order, is_required, created_at, updated_at
+                FROM spec_fields
+                ORDER BY display_order ASC, field_name ASC
+            `;
+            return result.map(parseSpecField);
+        },
+        CacheTTL.MEDIUM
+    );
 }
 
 /**
@@ -67,6 +81,7 @@ export async function createSpecField(
         VALUES (${data.field_name}, ${data.field_label}, ${data.field_type}, ${optionsJson}, ${data.display_order}, ${data.is_required})
         RETURNING id, field_name, field_label, field_type, options, display_order, is_required
     `;
+    invalidateSpecFieldCache();
     return parseSpecField(result[0]);
 }
 
@@ -96,6 +111,7 @@ export async function updateSpecField(
         WHERE id = ${id}
         RETURNING id, field_name, field_label, field_type, options, display_order, is_required
     `;
+    invalidateSpecFieldCache();
     return result.length > 0 ? parseSpecField(result[0]) : null;
 }
 
@@ -106,7 +122,9 @@ export async function deleteSpecField(
     id: number,
     databaseUrl: string
 ): Promise<boolean> {
-    return specFieldRepo.deleteById(id, databaseUrl);
+    const result = await specFieldRepo.deleteById(id, databaseUrl);
+    invalidateSpecFieldCache();
+    return result;
 }
 
 /**

@@ -7,11 +7,11 @@
   - Create migration script for deployment
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [ ]* 1.1 Write property test for database operations
+- [x] 1.1 Write property test for database operations
   - **Property 10: Product creation persistence**
   - **Validates: Requirements 3.4**
 
-- [ ]* 1.2 Write property test for referential integrity
+- [x] 1.2 Write property test for referential integrity
   - **Property 29: Referential integrity**
   - **Validates: Requirements 9.5**
 
@@ -22,19 +22,19 @@
   - Add session cookie handling
   - _Requirements: 1.2, 1.3, 1.4, 1.5_
 
-- [ ]* 2.1 Write property test for correct password authentication
+- [x] 2.1 Write property test for correct password authentication
   - **Property 1: Correct password grants access**
   - **Validates: Requirements 1.2**
 
-- [ ]* 2.2 Write property test for incorrect password rejection
+- [x] 2.2 Write property test for incorrect password rejection
   - **Property 2: Incorrect password denies access**
   - **Validates: Requirements 1.3**
 
-- [ ]* 2.3 Write property test for session persistence
+- [x] 2.3 Write property test for session persistence
   - **Property 3: Session persistence**
   - **Validates: Requirements 1.4**
 
-- [ ]* 2.4 Write property test for unauthenticated access
+- [x] 2.4 Write property test for unauthenticated access
   - **Property 4: Unauthenticated access redirect**
   - **Validates: Requirements 1.5**
 
@@ -47,23 +47,23 @@
   - Create comprehensive validation error messages
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ]* 3.1 Write property test for name validation
+- [x] 3.1 Write property test for name validation
   - **Property 17: Product name validation**
   - **Validates: Requirements 6.1**
 
-- [ ]* 3.2 Write property test for category validation
+- [x] 3.2 Write property test for category validation
   - **Property 18: Category validation**
   - **Validates: Requirements 6.3**
 
-- [ ]* 3.3 Write property test for image format validation
+- [x] 3.3 Write property test for image format validation
   - **Property 19: Image format validation**
   - **Validates: Requirements 6.4**
 
-- [ ]* 3.4 Write property test for validation error messages
+- [x] 3.4 Write property test for validation error messages
   - **Property 20: Validation error messages**
   - **Validates: Requirements 6.5**
 
-- [ ]* 3.5 Write property test for required field validation
+- [x] 3.5 Write property test for required field validation
   - **Property 8: Required field validation**
   - **Validates: Requirements 3.2, 3.6**
 
@@ -76,15 +76,15 @@
   - Add error handling for database operations
   - _Requirements: 3.4, 4.4, 5.2, 9.1, 9.2, 9.3, 9.4_
 
-- [ ]* 4.1 Write property test for product update persistence
+- [x] 4.1 Write property test for product update persistence
   - **Property 13: Product update persistence**
   - **Validates: Requirements 4.4**
 
-- [ ]* 4.2 Write property test for product deletion persistence
+- [x] 4.2 Write property test for product deletion persistence
   - **Property 14: Product deletion persistence**
   - **Validates: Requirements 5.2**
 
-- [ ]* 4.3 Write property test for deletion cancellation
+- [x] 4.3 Write property test for deletion cancellation
   - **Property 16: Deletion cancellation preserves data**
   - **Validates: Requirements 5.5**
 
@@ -96,23 +96,23 @@
   - Add image replacement logic (delete old, upload new)
   - _Requirements: 3.3, 4.3, 5.3, 7.1, 7.2, 7.3_
 
-- [ ]* 5.1 Write property test for image upload and storage
+- [x] 5.1 Write property test for image upload and storage
   - **Property 9: Image upload and storage**
   - **Validates: Requirements 3.3**
 
-- [ ]* 5.2 Write property test for image format acceptance
+- [x] 5.2 Write property test for image format acceptance
   - **Property 21: Image format acceptance**
   - **Validates: Requirements 7.1**
 
-- [ ]* 5.3 Write property test for unique image identifiers
+- [x] 5.3 Write property test for unique image identifiers
   - **Property 22: Unique image identifiers**
   - **Validates: Requirements 7.2**
 
-- [ ]* 5.4 Write property test for image replacement cleanup
+- [x] 5.4 Write property test for image replacement cleanup
   - **Property 12: Image replacement cleanup**
   - **Validates: Requirements 4.3**
 
-- [ ]* 5.5 Write property test for image cleanup on deletion
+- [x] 5.5 Write property test for image cleanup on deletion
   - **Property 15: Image cleanup on deletion**
   - **Validates: Requirements 5.3**
 
@@ -132,7 +132,7 @@
   - Implement comprehensive error handling
   - _Requirements: 2.1, 3.1, 3.3, 3.4, 4.1, 4.3, 4.4, 5.1, 5.2_
 
-- [ ]* 7.1 Write property test for product list completeness
+- [x] 7.1 Write property test for product list completeness
   - **Property 5: Product list completeness**
   - **Validates: Requirements 2.1**
 
@@ -145,27 +145,27 @@
   - Create import summary generation
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
-- [ ]* 8.1 Write property test for import file parsing
+- [x] 8.1 Write property test for import file parsing
   - **Property 23: Import file parsing**
   - **Validates: Requirements 8.1**
 
-- [ ]* 8.2 Write property test for import validation consistency
+- [x] 8.2 Write property test for import validation consistency
   - **Property 24: Import validation consistency**
   - **Validates: Requirements 8.2**
 
-- [ ]* 8.3 Write property test for import error reporting
+- [x] 8.3 Write property test for import error reporting
   - **Property 25: Import error reporting**
   - **Validates: Requirements 8.3**
 
-- [ ]* 8.4 Write property test for bulk import completeness
+- [x] 8.4 Write property test for bulk import completeness
   - **Property 26: Bulk import completeness**
   - **Validates: Requirements 8.4**
 
-- [ ]* 8.5 Write property test for import summary accuracy
+- [x] 8.5 Write property test for import summary accuracy
   - **Property 27: Import summary accuracy**
   - **Validates: Requirements 8.5**
 
-- [ ]* 8.6 Write property test for invalid import file rejection
+- [x] 8.6 Write property test for invalid import file rejection
   - **Property 28: Invalid import file rejection**
   - **Validates: Requirements 8.6**
 
@@ -195,11 +195,11 @@
   - Handle empty state
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 5.1_
 
-- [ ]* 11.1 Write property test for product display fields
+- [x] 11.1 Write property test for product display fields
   - **Property 6: Product display fields**
   - **Validates: Requirements 2.2**
 
-- [ ]* 11.2 Write property test for action buttons presence
+- [x] 11.2 Write property test for action buttons presence
   - **Property 7: Action buttons presence**
   - **Validates: Requirements 2.4**
 
@@ -212,7 +212,7 @@
   - Handle success and error responses
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ]* 12.1 Write property test for edit form pre-population
+- [x] 12.1 Write property test for edit form pre-population
   - **Property 11: Edit form pre-population**
   - **Validates: Requirements 4.1**
 

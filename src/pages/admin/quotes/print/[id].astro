@@ -1,0 +1,350 @@
+---
+/**
+ * Quote Print Page
+ * /admin/quotes/print/:id
+ * Generates a printable quote document
+ */
+export const prerender = false;
+
+import { getQuoteById } from '../../../../lib/quoteDb';
+import { getCompanySettings } from '../../../../lib/settingsDb';
+
+// Check authentication
+const sessionCookie = Astro.cookies.get('admin_session');
+
+if (!sessionCookie?.value) {
+  return Astro.redirect('/admin/login');
+}
+
+const { validateSession } = await import('../../../../lib/auth');
+const env = Astro.locals.runtime?.env || {};
+const databaseUrl = env.DATABASE_URL;
+
+if (!databaseUrl) {
+  return Astro.redirect('/admin/login');
+}
+
+try {
+  const isValid = await validateSession(sessionCookie.value, databaseUrl);
+  if (!isValid) {
+    return Astro.redirect('/admin/login');
+  }
+} catch (e) {
+  return Astro.redirect('/admin/login');
+}
+
+const quoteId = Astro.params.id;
+if (!quoteId) {
+    return Astro.redirect('/admin/quotes');
+}
+
+if (!databaseUrl) {
+    return new Response('Database not configured', { status: 500 });
+}
+
+const quote = await getQuoteById(quoteId, databaseUrl);
+if (!quote) {
+    return Astro.redirect('/admin/quotes');
+}
+
+const settings = await getCompanySettings(databaseUrl);
+
+// Calculate totals
+const total = quote.items.reduce((sum, item) => sum + (item.unit_price || 0) * item.quantity, 0);
+
+// Format date
+const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const quoteDate = quote.replied_at ? formatDate(quote.replied_at) : formatDate(quote.created_at);
+const validUntil = new Date(quote.replied_at || quote.created_at);
+validUntil.setDate(validUntil.getDate() + settings.quote_validity_days);
+const validUntilStr = formatDate(validUntil.toISOString());
+---
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>報價單 - {quote.quote_id}</title>
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .quote-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .quote-title {
+            text-align: center;
+            font-size: 24pt;
+            font-weight: bold;
+            letter-spacing: 1em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .quote-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .header-row {
+            display: flex;
+            gap: 0;
+            align-items: baseline;
+        }
+        
+        .header-label {
+            width: 100px;
+            font-weight: bold;
+            text-align: justify;
+            text-align-last: justify;
+            flex-shrink: 0;
+        }
+        
+        .header-value {
+            flex: 1;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+            padding-left: 5px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .items-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .items-table .item-name {
+            text-align: left;
+        }
+        
+        .items-table .item-amount {
+            text-align: right;
+        }
+        
+        .items-table .total-row td {
+            font-weight: bold;
+            font-size: 14pt;
+        }
+        
+        .notes-section {
+            border: 1px solid #333;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .notes-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .notes-list {
+            list-style: none;
+        }
+        
+        .notes-list li {
+            margin-bottom: 5px;
+        }
+        
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+        
+        .signature-label {
+            font-weight: bold;
+            margin-bottom: 60px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+        
+        .company-info {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 10pt;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .print-button:hover {
+            background: #1d4ed8;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <a href="/admin/quotes" class="back-button no-print">← 返回</a>
+    <button onclick="window.print()" class="print-button no-print">列印</button>
+    
+    <div class="quote-container">
+        <h1 class="quote-title">報 價 單</h1>
+        
+        <div class="quote-header">
+            <div class="header-row">
+                <span class="header-label">客戶名稱：</span>
+                <span class="header-value">{quote.company_name || quote.customer_name}</span>
+            </div>
+            <div class="header-row">
+                <span class="header-label">統一編號：</span>
+                <span class="header-value">{quote.customer_tax_id || ''}</span>
+            </div>
+            <div class="header-row">
+                <span class="header-label">電話/傳真：</span>
+                <span class="header-value">{quote.customer_phone}</span>
+            </div>
+            <div class="header-row">
+                <span class="header-label">聯絡人：</span>
+                <span class="header-value">{quote.customer_name}</span>
+            </div>
+            <div class="header-row">
+                <span class="header-label">日期：</span>
+                <span class="header-value">{quoteDate}</span>
+            </div>
+            <div class="header-row">
+                <span class="header-label">報價單號：</span>
+                <span class="header-value">{quote.quote_id.substring(0, 8).toUpperCase()}</span>
+            </div>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">項次</th>
+                    <th>項目</th>
+                    <th style="width: 50px;">單位</th>
+                    <th style="width: 50px;">數量</th>
+                    <th style="width: 70px;">單價</th>
+                    <th style="width: 70px;">金額</th>
+                </tr>
+            </thead>
+            <tbody>
+                {quote.items.map((item, index) => (
+                    <tr>
+                        <td>{index + 1}</td>
+                        <td class="item-name">{item.product_name || item.product_id}</td>
+                        <td>{item.unit || '式'}</td>
+                        <td>{item.quantity}</td>
+                        <td class="item-amount">{item.unit_price?.toLocaleString() || '-'}</td>
+                        <td class="item-amount">{item.unit_price ? (item.unit_price * item.quantity).toLocaleString() : '-'}</td>
+                    </tr>
+                ))}
+                <tr class="total-row">
+                    <td colspan="5" style="text-align: right;">總　計</td>
+                    <td class="item-amount">{total.toLocaleString()}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="notes-section">
+            <div class="notes-title">備註事項：</div>
+            <ol class="notes-list">
+                <li>1. 本報價單有效期限為 {settings.quote_validity_days} 天（至 {validUntilStr}）。</li>
+                {settings.payment_terms && <li>2. 付款方式：{settings.payment_terms}。</li>}
+                {settings.quote_notes && <li>3. {settings.quote_notes}</li>}
+            </ol>
+        </div>
+        
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-label">客戶簽認</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">公司簽章</div>
+                <div class="signature-line">
+                    {settings.company_name && <div>{settings.company_name}</div>}
+                    {settings.company_phone && <div>電話：{settings.company_phone}</div>}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

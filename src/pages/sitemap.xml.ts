@@ -6,13 +6,13 @@
 import type { APIRoute } from 'astro';
 import { getAllProducts } from '../lib/products';
 
-const SITE_URL = 'https://yourdomain.com'; // TODO: Replace with your actual domain
+const SITE_URL = 'https://0e3d34ef.1688-dek.pages.dev';
 
 export const GET: APIRoute = async ({ locals }) => {
   const products = await getAllProducts(locals.runtime);
-  
+
   const currentDate = new Date().toISOString().split('T')[0];
-  
+
   // Static pages
   const staticPages = [
     { url: '', changefreq: 'daily', priority: 1.0, lastmod: currentDate },
@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ locals }) => {
     { url: '/quote-list', changefreq: 'weekly', priority: 0.8, lastmod: currentDate },
     { url: '/quote-submit', changefreq: 'weekly', priority: 0.8, lastmod: currentDate },
   ];
-  
+
   // Product pages
   const productPages = products.map(product => ({
     url: `/products/${product.product_id}`,
@@ -28,10 +28,10 @@ export const GET: APIRoute = async ({ locals }) => {
     priority: 0.7,
     lastmod: currentDate
   }));
-  
+
   // Combine all pages
   const allPages = [...staticPages, ...productPages];
-  
+
   // Generate XML
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

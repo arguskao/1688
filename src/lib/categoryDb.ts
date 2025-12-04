@@ -5,6 +5,7 @@
 
 import { getDb } from './database';
 import { createRepository } from './baseRepository';
+import { cache, CacheKeys, CacheTTL } from './cache';
 import type { Category } from '../types';
 
 export type { Category };
@@ -17,28 +18,47 @@ const categoryRepo = createRepository<Category>({
 });
 
 /**
- * Get all categories ordered by display_order
+ * Get all categories ordered by display_order (with caching)
  */
 export async function getAllCategories(databaseUrl: string): Promise<Category[]> {
-  const sql = getDb(databaseUrl);
-  const result = await sql`
+  return cache.getOrSet(
+    CacheKeys.categories(),
+    async () => {
+      const sql = getDb(databaseUrl);
+      const result = await sql`
         SELECT id, name, display_order, created_at, updated_at
         FROM categories
         ORDER BY display_order ASC, name ASC
-    `;
-  return result as Category[];
+      `;
+      return result as Category[];
+    },
+    CacheTTL.MEDIUM
+  );
 }
 
 /**
- * Get category names only (for dropdowns)
+ * Get category names only (for dropdowns, with caching)
  */
 export async function getCategoryNames(databaseUrl: string): Promise<string[]> {
-  const sql = getDb(databaseUrl);
-  const result = await sql`
+  return cache.getOrSet(
+    CacheKeys.categoryNames(),
+    async () => {
+      const sql = getDb(databaseUrl);
+      const result = await sql`
         SELECT name FROM categories
         ORDER BY display_order ASC, name ASC
-    `;
-  return result.map((row: any) => row.name);
+      `;
+      return result.map((row: any) => row.name);
+    },
+    CacheTTL.MEDIUM
+  );
+}
+
+/**
+ * Invalidate category cache
+ */
+export function invalidateCategoryCache(): void {
+  cache.deleteByPrefix('categories:');
 }
 
 /**
@@ -65,6 +85,7 @@ export async function createCategory(
         VALUES (${name}, ${displayOrder})
         RETURNING id, name, display_order, created_at, updated_at
     `;
+  invalidateCategoryCache();
   return result[0] as Category;
 }
 
@@ -84,6 +105,7 @@ export async function updateCategory(
         WHERE id = ${id}
         RETURNING id, name, display_order, created_at, updated_at
     `;
+  invalidateCategoryCache();
   return result.length > 0 ? (result[0] as Category) : null;
 }
 
@@ -94,7 +116,9 @@ export async function deleteCategory(
   id: number,
   databaseUrl: string
 ): Promise<boolean> {
-  return categoryRepo.deleteById(id, databaseUrl);
+  const result = await categoryRepo.deleteById(id, databaseUrl);
+  invalidateCategoryCache();
+  return result;
 }
 
 /**

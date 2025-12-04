@@ -36,6 +36,7 @@ export async function createProduct(
 
 /**
  * Get all products with pagination
+ * Optimized: Uses parallel queries for products and count
  */
 export async function getProducts(
   databaseUrl: string,
@@ -48,42 +49,30 @@ export async function getProducts(
   const sql = getDb(databaseUrl);
   const { limit = 50, offset = 0, category } = options;
 
-  // Get products
-  let products;
-  if (category) {
-    products = await sql`
-      SELECT * FROM products
-      WHERE category = ${category}
-      ORDER BY created_at DESC
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `;
-  } else {
-    products = await sql`
-      SELECT * FROM products
-      ORDER BY created_at DESC
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `;
-  }
-
-  // Get total count
-  let countResult;
-  if (category) {
-    countResult = await sql`
-      SELECT COUNT(*) as count FROM products
-      WHERE category = ${category}
-    `;
-  } else {
-    countResult = await sql`
-      SELECT COUNT(*) as count FROM products
-    `;
-  }
-  const total = parseInt(countResult[0].count);
+  // Execute both queries in parallel for better performance
+  const [products, countResult] = await Promise.all([
+    category
+      ? sql`
+          SELECT * FROM products
+          WHERE category = ${category}
+          ORDER BY created_at DESC
+          LIMIT ${limit}
+          OFFSET ${offset}
+        `
+      : sql`
+          SELECT * FROM products
+          ORDER BY created_at DESC
+          LIMIT ${limit}
+          OFFSET ${offset}
+        `,
+    category
+      ? sql`SELECT COUNT(*) as count FROM products WHERE category = ${category}`
+      : sql`SELECT COUNT(*) as count FROM products`
+  ]);
 
   return {
     products: products as Product[],
-    total,
+    total: parseInt(countResult[0].count),
   };
 }
 
@@ -224,6 +213,7 @@ export async function getCategories(databaseUrl: string): Promise<string[]> {
 
 /**
  * Search products by name or SKU
+ * Optimized: Uses parallel queries for products and count
  */
 export async function searchProducts(
   query: string,
@@ -235,32 +225,29 @@ export async function searchProducts(
 ): Promise<{ products: Product[]; total: number }> {
   const sql = getDb(databaseUrl);
   const { limit = 50, offset = 0 } = options;
-
   const searchPattern = `%${query}%`;
 
-  // Get products
-  const products = await sql`
-    SELECT * FROM products
-    WHERE name_en ILIKE ${searchPattern}
-       OR sku ILIKE ${searchPattern}
-       OR description_en ILIKE ${searchPattern}
-    ORDER BY created_at DESC
-    LIMIT ${limit}
-    OFFSET ${offset}
-  `;
-
-  // Get total count
-  const countResult = await sql`
-    SELECT COUNT(*) as count FROM products
-    WHERE name_en ILIKE ${searchPattern}
-       OR sku ILIKE ${searchPattern}
-       OR description_en ILIKE ${searchPattern}
-  `;
-
-  const total = parseInt(countResult[0].count);
+  // Execute both queries in parallel
+  const [products, countResult] = await Promise.all([
+    sql`
+      SELECT * FROM products
+      WHERE name_en ILIKE ${searchPattern}
+         OR sku ILIKE ${searchPattern}
+         OR description_en ILIKE ${searchPattern}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `,
+    sql`
+      SELECT COUNT(*) as count FROM products
+      WHERE name_en ILIKE ${searchPattern}
+         OR sku ILIKE ${searchPattern}
+         OR description_en ILIKE ${searchPattern}
+    `
+  ]);
 
   return {
     products: products as Product[],
-    total,
+    total: parseInt(countResult[0].count),
   };
 }
