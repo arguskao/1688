@@ -20,7 +20,14 @@ export interface StoredQuoteItem {
 export function getQuoteListFromStorage(): StoredQuoteItem[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    // Ensure we always return an array
+    if (!Array.isArray(parsed)) {
+      console.warn('Invalid quote list data, resetting to empty array');
+      return [];
+    }
+    return parsed;
   } catch (error) {
     console.error('Failed to read from storage:', error);
     return [];

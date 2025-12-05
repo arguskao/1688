@@ -65,9 +65,9 @@ export default function AdminProductForm({ product, mode }: AdminProductFormProp
         fetch('/api/admin/categories')
             .then(res => res.json())
             .then(data => {
-                if (data.categories) {
-                    setCategories(data.categories.map((c: any) => c.name));
-                }
+                // Handle both formats: data.categories or data.data.categories
+                const cats = data.categories || data.data?.categories || [];
+                setCategories(cats.map((c: any) => c.name));
             })
             .catch(err => console.error('Failed to fetch categories:', err));
 
@@ -75,15 +75,15 @@ export default function AdminProductForm({ product, mode }: AdminProductFormProp
         fetch('/api/admin/spec-fields')
             .then(res => res.json())
             .then(data => {
-                if (data.specFields) {
-                    setSpecFields(data.specFields);
-                    // Initialize spec values from product if editing
-                    if (product?.specs_json) {
-                        const specs = typeof product.specs_json === 'string'
-                            ? JSON.parse(product.specs_json)
-                            : product.specs_json;
-                        setSpecValues(specs);
-                    }
+                // Handle both formats: data.specFields or data.data.specFields
+                const fields = data.specFields || data.data?.specFields || [];
+                setSpecFields(fields);
+                // Initialize spec values from product if editing
+                if (product?.specs_json) {
+                    const specs = typeof product.specs_json === 'string'
+                        ? JSON.parse(product.specs_json)
+                        : product.specs_json;
+                    setSpecValues(specs);
                 }
             })
             .catch(err => console.error('Failed to fetch spec fields:', err));

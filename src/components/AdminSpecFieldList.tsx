@@ -55,7 +55,9 @@ export default function AdminSpecFieldList() {
             }
             const data = await res.json();
             if (data.success) {
-                setSpecFields(data.specFields || []);
+                // Handle both formats: data.specFields or data.data.specFields
+                const fields = data.specFields || data.data?.specFields || [];
+                setSpecFields(fields);
             } else {
                 setError(data.error || 'Failed to fetch spec fields');
             }
@@ -329,8 +331,8 @@ export default function AdminSpecFieldList() {
                                     <td className="px-4 py-3 text-sm text-gray-800">{field.field_label}</td>
                                     <td className="px-4 py-3 text-sm text-gray-600">
                                         <span className={`px-2 py-1 rounded text-xs ${field.field_type === 'select' ? 'bg-blue-100 text-blue-700' :
-                                                field.field_type === 'number' ? 'bg-purple-100 text-purple-700' :
-                                                    'bg-gray-100 text-gray-700'
+                                            field.field_type === 'number' ? 'bg-purple-100 text-purple-700' :
+                                                'bg-gray-100 text-gray-700'
                                             }`}>
                                             {getFieldTypeLabel(field.field_type)}
                                         </span>

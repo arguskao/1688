@@ -47,7 +47,9 @@ export default function AdminCategoryList() {
                 throw new Error(data.error || 'Failed to fetch categories');
             }
 
-            setCategories(data.categories);
+            // Handle both formats: data.categories or data.data.categories
+            const cats = data.categories || data.data?.categories || [];
+            setCategories(cats);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load categories');
         } finally {

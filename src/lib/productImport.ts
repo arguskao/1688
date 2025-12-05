@@ -1,8 +1,8 @@
 /**
  * Product import functionality
  * Supports CSV and JSON formats
+ * Edge-compatible (no Node.js dependencies)
  */
-import { parse } from 'csv-parse/sync';
 import { validateProduct } from './productValidation';
 import { createProduct } from './productDb';
 import type { Product } from '../types/product';
@@ -23,17 +23,133 @@ export interface ImportError {
 }
 
 /**
- * Parse CSV file content
+ * Parse CSV line handling quoted fields with commas and newlines
+ * Also handles JSON objects that may contain commas
+ */
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  let braceDepth = 0; // Track JSON object depth
+  let bracketDepth = 0; // Track JSON array depth
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+    const prevChar = i > 0 ? line[i - 1] : '';
+
+    // Inside a quoted field (CSV standard quoting)
+    if (inQuotes) {
+      if (char === '"') {
+        if (nextChar === '"') {
+          // Escaped quote in CSV
+          current += '"';
+          i++;
+        } else {
+          // End of quoted field
+          inQuotes = false;
+        }
+      } else {
+        current += char;
+      }
+    }
+    // Inside a JSON object or array - treat quotes as part of JSON, not CSV quoting
+    else if (braceDepth > 0 || bracketDepth > 0) {
+      current += char;
+      if (char === '{') braceDepth++;
+      else if (char === '}') braceDepth--;
+      else if (char === '[') bracketDepth++;
+      else if (char === ']') bracketDepth--;
+    }
+    // Normal CSV parsing
+    else {
+      if (char === '"' && (current === '' || prevChar === ',')) {
+        // Start of quoted field (only at beginning of field)
+        inQuotes = true;
+      } else if (char === '{') {
+        braceDepth++;
+        current += char;
+      } else if (char === '[') {
+        bracketDepth++;
+        current += char;
+      } else if (char === ',') {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+  }
+
+  result.push(current.trim());
+  return result;
+}
+
+/**
+ * Parse CSV file content (edge-compatible, no Node.js dependencies)
  */
 export function parseCSV(content: string): any[] {
   try {
-    const records = parse(content, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
-      relax_quotes: true,
-      relax_column_count: true,
-    });
+    // Normalize line endings
+    const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    // Split into lines, handling quoted fields that may contain newlines
+    const lines: string[] = [];
+    let currentLine = '';
+    let inQuotes = false;
+
+    for (const char of normalized) {
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      }
+
+      if (char === '\n' && !inQuotes) {
+        if (currentLine.trim()) {
+          lines.push(currentLine);
+        }
+        currentLine = '';
+      } else {
+        currentLine += char;
+      }
+    }
+
+    if (currentLine.trim()) {
+      lines.push(currentLine);
+    }
+
+    if (lines.length === 0) {
+      throw new Error('CSV file is empty');
+    }
+
+    // Parse header row
+    const headers = parseCSVLine(lines[0]);
+
+    if (headers.length === 0) {
+      throw new Error('CSV file has no headers');
+    }
+
+    // Parse data rows
+    const records: any[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i]);
+
+      // Skip empty rows
+      if (values.length === 0 || (values.length === 1 && !values[0])) {
+        continue;
+      }
+
+      const record: any = {};
+
+      for (let j = 0; j < headers.length; j++) {
+        const header = headers[j];
+        const value = values[j] || '';
+        record[header] = value;
+      }
+
+      records.push(record);
+    }
+
     return records;
   } catch (error: any) {
     throw new Error(`CSV parsing failed: ${error.message}`);
@@ -46,7 +162,7 @@ export function parseCSV(content: string): any[] {
 export function parseJSON(content: string): any[] {
   try {
     const data = JSON.parse(content);
-    
+
     // Support both array and object with products array
     if (Array.isArray(data)) {
       return data;
@@ -69,7 +185,7 @@ export function validateImportFile(filename: string, content: string): {
   error?: string;
 } {
   const ext = filename.toLowerCase().split('.').pop();
-  
+
   if (ext === 'csv') {
     try {
       parseCSV(content);
@@ -90,6 +206,64 @@ export function validateImportFile(filename: string, content: string): {
 }
 
 /**
+ * Safely parse specs_json field
+ */
+function parseSpecsJson(value: any): Record<string, any> {
+  if (!value) return {};
+
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    let trimmed = value.trim();
+    if (!trimmed || trimmed === '{}') return {};
+
+    // Remove surrounding quotes if present
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      trimmed = trimmed.slice(1, -1);
+    }
+
+    // Try parsing as-is first
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      // Continue to try fixes
+    }
+
+    // Try to fix common CSV parsing issues with JSON
+    // Sometimes quotes get doubled or escaped incorrectly
+    try {
+      // Replace doubled quotes (CSV escaping)
+      const fixed = trimmed.replace(/""/g, '"');
+      const parsed = JSON.parse(fixed);
+      if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      // Continue to try more fixes
+    }
+
+    // Try replacing single quotes with double quotes
+    try {
+      const fixed = trimmed.replace(/'/g, '"');
+      const parsed = JSON.parse(fixed);
+      if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      console.warn('Failed to parse specs_json:', trimmed);
+    }
+  }
+
+  return {};
+}
+
+/**
  * Transform raw import data to Product format
  */
 function transformImportData(data: any): Omit<Product, 'created_at' | 'updated_at'> {
@@ -100,9 +274,7 @@ function transformImportData(data: any): Omit<Product, 'created_at' | 'updated_a
     category: data.category || '',
     description_en: data.description_en || data.description || '',
     description_html: data.description_html,
-    specs_json: typeof data.specs_json === 'string' 
-      ? JSON.parse(data.specs_json) 
-      : (data.specs_json || {}),
+    specs_json: parseSpecsJson(data.specs_json),
     image_url: data.image_url || data.image || '',
     images: data.images || []
   };
@@ -118,15 +290,15 @@ export async function importProducts(
   const errors: ImportError[] = [];
   let imported = 0;
   let failed = 0;
-  
+
   for (let i = 0; i < records.length; i++) {
     const row = i + 1;
     const record = records[i];
-    
+
     try {
       // Transform data
       const productData = transformImportData(record);
-      
+
       // Validate product
       const validation = validateProduct(productData);
       if (!validation.valid) {
@@ -138,11 +310,11 @@ export async function importProducts(
         failed++;
         continue;
       }
-      
+
       // Create product in database
       await createProduct(productData, databaseUrl);
       imported++;
-      
+
     } catch (error: any) {
       errors.push({
         row,
@@ -152,10 +324,10 @@ export async function importProducts(
       failed++;
     }
   }
-  
+
   const total = records.length;
   const summary = `Imported ${imported} of ${total} products. ${failed} failed.`;
-  
+
   return {
     success: failed === 0,
     total,
@@ -186,7 +358,7 @@ export async function importProductsFromFile(
       summary: validation.error || 'Invalid file format'
     };
   }
-  
+
   // Parse file
   let records: any[];
   try {
@@ -205,7 +377,7 @@ export async function importProductsFromFile(
       summary: `Failed to parse file: ${error.message}`
     };
   }
-  
+
   // Import products
   return await importProducts(records, databaseUrl);
 }
@@ -223,7 +395,7 @@ export function generateSampleCSV(): string {
     'specs_json',
     'image_url'
   ];
-  
+
   const sampleRow = [
     'PROD001',
     'Sample Product',
@@ -233,7 +405,7 @@ export function generateSampleCSV(): string {
     '{"type":"simple","tags":["sample"]}',
     'https://example.com/image.jpg'
   ];
-  
+
   return [
     headers.join(','),
     sampleRow.map(field => `"${field}"`).join(',')
@@ -260,6 +432,6 @@ export function generateSampleJSON(): string {
       }
     ]
   };
-  
+
   return JSON.stringify(sample, null, 2);
 }

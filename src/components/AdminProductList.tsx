@@ -53,8 +53,11 @@ export default function AdminProductList({
                 throw new Error(data.error || 'Failed to fetch products');
             }
 
-            setProducts(data.products);
-            setPagination(data.pagination);
+            // Handle both formats: data.products or data.data.products
+            const prods = data.products || data.data?.products || [];
+            const pag = data.pagination || data.data?.pagination || pagination;
+            setProducts(prods);
+            setPagination(pag);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load products');
         } finally {
@@ -298,8 +301,8 @@ export default function AdminProductList({
                                     key={pageNum}
                                     onClick={() => handlePageChange(pageNum)}
                                     className={`px-3 py-2 border rounded-lg text-sm font-medium ${pagination.page === pageNum
-                                            ? 'bg-blue-600 text-white border-blue-600'
-                                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                                         }`}
                                 >
                                     {pageNum}

@@ -99,15 +99,25 @@ export default function AdminProductImport() {
 
             const data = await response.json();
 
-            if (!response.ok) {
+            if (!response.ok && response.status !== 207) {
                 if (response.status === 401) {
                     window.location.href = '/admin/login';
                     return;
                 }
-                throw new Error(data.error || '匯入失敗');
+                throw new Error(data.error || data.message || '匯入失敗');
             }
 
-            setResult(data);
+            // Handle different API response formats
+            // API returns: { success: true, data: { result: { imported, failed, errors } } }
+            // or: { success: false, result: { imported, failed, errors } }
+            const resultData = data.data?.result || data.result || data;
+
+            setResult({
+                success: resultData.failed === 0,
+                imported: resultData.imported || 0,
+                failed: resultData.failed || 0,
+                errors: resultData.errors || []
+            });
 
         } catch (err) {
             setError(err instanceof Error ? err.message : '匯入失敗，請稍後再試');
@@ -146,8 +156,8 @@ export default function AdminProductImport() {
             {/* Import Result */}
             {result && (
                 <div className={`mb-6 p-4 rounded-lg border ${result.failed === 0
-                        ? 'bg-green-50 border-green-200'
-                        : 'bg-yellow-50 border-yellow-200'
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-yellow-50 border-yellow-200'
                     }`}>
                     <h3 className={`font-semibold ${result.failed === 0 ? 'text-green-800' : 'text-yellow-800'
                         }`}>
@@ -217,10 +227,10 @@ export default function AdminProductImport() {
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
-                                ? 'border-blue-500 bg-blue-50'
-                                : file
-                                    ? 'border-green-500 bg-green-50'
-                                    : 'border-gray-300 hover:border-gray-400'
+                            ? 'border-blue-500 bg-blue-50'
+                            : file
+                                ? 'border-green-500 bg-green-50'
+                                : 'border-gray-300 hover:border-gray-400'
                             }`}
                     >
                         {file ? (

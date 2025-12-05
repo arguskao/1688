@@ -1,0 +1,2 @@
+product_id,name_en,sku,category,description_en,specs_json
+100,Product 1,SKU1,優惠組合,Description 1,{"package": "瓶", "weight": "200克"}
